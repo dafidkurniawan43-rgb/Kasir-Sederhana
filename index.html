@@ -315,6 +315,18 @@ body.guest .gbar{display:flex}
   .tabs{max-width:960px;background:#fff;border-radius:16px 16px 0 0}
   .cartbar{max-width:936px}
 }
+#rcpt{display:none}
+@media print{
+  body *{visibility:hidden}
+  #rcpt,#rcpt *{visibility:visible}
+  #rcpt{display:block;position:absolute;left:0;top:0;width:58mm;padding:3mm 2mm;font:11px/1.4 "Courier New",monospace;color:#000;background:#fff}
+  #rcpt .c{text-align:center}
+  #rcpt .b{font-weight:700}
+  #rcpt .big{font-size:14px}
+  #rcpt .ri{display:flex;justify-content:space-between;gap:4px}
+  #rcpt .nm{margin-top:3px;font-weight:600}
+  #rcpt .sep{border-top:1px dashed #000;margin:5px 0}
+}
 </style>
 </head>
 <body data-tab="kasir">
@@ -357,6 +369,7 @@ body.guest .gbar{display:flex}
 
     <section id="cartbox">
       <div class="head"><h2>Pembayaran</h2></div>
+      <input id="bname" placeholder="Nama pembeli (opsional)" maxlength="30" autocomplete="off" style="margin-bottom:8px">
       <input id="paid" placeholder="Uang diterima" readonly aria-label="Uang diterima">
       <div class="quick" id="quick"></div>
       <div class="keypad" id="keypad"></div>
@@ -686,19 +699,31 @@ body.guest .gbar{display:flex}
   function lc(a,n){laci.log.push({ts:Date.now(),a:a,n:n});if(laci.log.length>1500)laci.log.splice(0,200)}
   function sheet(h){$("sbox").innerHTML=h;$("sheet").hidden=false}
   function closeSheet(){$("sheet").hidden=true;stopScan()}
-  function sText(x){return (shop||"Kasir")+"\n"+dm(x.ts)+" "+hm(x.ts)+"\n\n"+x.it.map(function(i){return i.q+" x "+i.n+" = "+rp(i.p*i.q)}).join("\n")+"\n\nTotal: "+rp(x.t)+"\n"+(x.m==="tunai"?"Tunai: "+rp(x.pd)+"\nKembali: "+rp(x.ch):x.m==="qris"?"Bayar: QRIS":"Belum lunas, utang a.n. "+x.nm)+"\n\nTerima kasih"}
+  function sText(x){return (shop||"Kasir")+"\n"+dm(x.ts)+" "+hm(x.ts)+"\n"+(x.no?"No. Pesanan #"+String(x.no).padStart(3,"0")+"\n":"")+(x.bn&&x.m!=="utang"?"Pembeli: "+x.bn+"\n":"")+"\n"+x.it.map(function(i){return i.q+" x "+i.n+" = "+rp(i.p*i.q)}).join("\n")+"\n\nTotal: "+rp(x.t)+"\n"+(x.m==="tunai"?"Tunai: "+rp(x.pd)+"\nKembali: "+rp(x.ch):x.m==="qris"?"Bayar: QRIS":"Belum lunas, utang a.n. "+x.nm)+"\n\nTerima kasih"}
+  function rcptHtml(x){
+    var sep='<div class="sep"></div>';
+    var items=x.it.map(function(i){return '<div class="nm">'+esc(i.n)+'</div><div class="ri"><span>'+i.q+' x '+rp(i.p)+'</span><span>'+rp(i.p*i.q)+'</span></div>'}).join('');
+    var bayar=x.m==="tunai"?'<div class="ri"><span>Tunai</span><span>'+rp(x.pd)+'</span></div><div class="ri"><span>Kembali</span><span>'+rp(x.ch)+'</span></div>':x.m==="qris"?'<div class="ri"><span>Bayar</span><span>QRIS</span></div>':'<div class="ri b"><span>BELUM LUNAS</span><span>Utang</span></div><div class="ri"><span>Atas nama</span><span>'+esc(x.nm)+'</span></div>';
+    return (x.v?'<div class="c b">** DIBATALKAN **</div>':'')+'<div class="c b big">'+esc(shop||"Kasir")+'</div><div class="c">'+dm(x.ts)+' '+hm(x.ts)+'</div>'+(x.no?'<div class="c b">No. Pesanan #'+String(x.no).padStart(3,"0")+'</div>':'')+(x.bn&&x.m!=="utang"?'<div class="c">Pembeli: '+esc(x.bn)+'</div>':'')+sep+items+sep+'<div class="ri b big"><span>TOTAL</span><span>'+rp(x.t)+'</span></div>'+bayar+sep+'<div class="c">Terima kasih</div><div class="c">Selamat berbelanja</div>';
+  }
+  function printRcpt(){
+    var r=$("rcpt");if(!r)return;
+    r.innerHTML=curTx?rcptHtml(curTx):esc(lastTxt||"");
+    setTimeout(function(){window.print()},80);
+  }
   function struk(x){
     lastTxt=sText(x);curTx=x;
-    sheet('<h2>Struk</h2><pre>'+esc(lastTxt)+'</pre><a class="pay sheetlink" href="https://wa.me/?text='+encodeURIComponent(lastTxt)+'" target="_blank" rel="noopener">Kirim lewat WhatsApp</a><button class="pay qr" data-act="copy" type="button">Salin struk</button><button class="pay qr" data-act="bt" type="button">Cetak struk</button>'+(x.v?'':'<button class="link" data-act="void" type="button">Batalkan transaksi</button>')+'<button class="link soft" data-act="close" type="button">Tutup</button>');
+    sheet('<h2>Struk</h2><pre>'+esc(lastTxt)+'</pre><a class="pay sheetlink" href="https://wa.me/?text='+encodeURIComponent(lastTxt)+'" target="_blank" rel="noopener">Kirim lewat WhatsApp</a><button class="pay qr" data-act="copy" type="button">Salin struk</button><button class="pay qr" data-act="bt" type="button">Cetak struk</button><button class="pay qr" data-act="pr" type="button">Cetak (printer lain / PDF)</button>'+(x.v?'':'<button class="link" data-act="void" type="button">Batalkan transaksi</button>')+'<button class="link soft" data-act="close" type="button">Tutup</button>');
   }
   function finish(method,name){if(!shift.open){toast("Buka kasir dulu");openSheet();return}
     var rows=items(),t=total(),pd=method==="tunai"?paid():t;
-    var tx={id:Date.now(),ts:Date.now(),it:rows.map(function(r){var pr=products.filter(function(x){return x.id===r.id})[0];return {i:pr?pr.id:0,n:r.n,p:r.p,q:cart[r.id],b:pr&&pr.b!=null?pr.b:null}}),t:t,m:method,pd:pd,ch:pd-t,nm:name||""};
+    var bn=method==="utang"?"":($("bname")?$("bname").value.trim():"");var today=new Date().toDateString(),no=trx.filter(function(t){return new Date(t.ts).toDateString()===today}).length+1;
+    var tx={id:Date.now(),ts:Date.now(),it:rows.map(function(r){var pr=products.filter(function(x){return x.id===r.id})[0];return {i:pr?pr.id:0,n:r.n,p:r.p,q:cart[r.id],b:pr&&pr.b!=null?pr.b:null}}),t:t,m:method,pd:pd,ch:pd-t,nm:name||"",no:no,bn:bn};
     trx.unshift(tx);if(trx.length>2000)trx.length=2000;
     rows.forEach(function(r){var p=products.filter(function(x){return x.id===r.id})[0];if(p&&p.s!=null)p.s=Math.max(0,p.s-cart[r.id])});
     if(method==="tunai")lc(t,"Penjualan");
     if(method==="utang")debts.push({id:tx.id,ts:tx.ts,nm:name,a:t});
-    cart={};$("paid").value="";save();render();struk(tx);
+    cart={};$("paid").value="";if($("bname"))$("bname").value="";save();render();struk(tx);
     toast(method==="tunai"?"Lunas. Kembalian "+rp(tx.ch):method==="qris"?"Lunas via QRIS":"Utang dicatat");
   }
   function laciSheet(){if(!shift.open){openSheet();return}
@@ -731,6 +756,7 @@ body.guest .gbar{display:flex}
     var b=e.target.closest("[data-act]");if(!b)return;var a=b.getAttribute("data-act");
     if(a==="close")closeSheet();
     else if(a==="bt")printBT(curTx);
+    else if(a==="pr")printRcpt();
     else if(a==="void"){askPin(function(){if(confirm("Batalkan transaksi ini? Stok dan uang laci akan dikoreksi."))voidTrx(curTx)})}
     else if(a==="pinok"){if(hp($("pn2").value)===pin){unlocked=true;closeSheet();var f=pinCb;pinCb=null;if(f)f()}else toast("PIN salah")}
     else if(a==="pinsave"){var pv=$("pn2").value;if(!/^\d{4,6}$/.test(pv)){toast("PIN harus 4 sampai 6 angka");return}pin=hp(pv);unlocked=true;save();render();closeSheet();toast("PIN disimpan")}
@@ -1033,5 +1059,6 @@ body.guest .gbar{display:flex}
   gate();refresh();
 })();
 </script>
+<div id="rcpt"></div>
 </body>
 </html>
