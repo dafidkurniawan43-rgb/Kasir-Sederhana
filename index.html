@@ -1217,9 +1217,22 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
   function rpcMsg(r){if(r.net)return "Tidak ada internet. Coba lagi setelah tersambung.";return (r.j&&(r.j.message||r.j.msg))||("Gagal (kode "+r.st+"). Coba lagi.")}
   function genKode(){var a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(8);crypto.getRandomValues(b);var s="";for(var i=0;i<8;i++)s+=a.charAt(b[i]%a.length);return s}
   function simpanKode(tok,cb){var raw=genKode();rpc("buat_kode_pemulihan",{p_kode:raw},tok).then(function(r){if(r.ok)cb(raw.slice(0,4)+"-"+raw.slice(4),null);else cb(null,rpcMsg(r))})}
+  function salinTeks(t,cb){
+    function cadangan(){var ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.top="-1000px";ta.style.opacity="0";document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand("copy")}catch(e){}ta.remove();cb(ok)}
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(function(){cb(true)},cadangan)}else cadangan();
+  }
   function showKodeBox(kode,onDone){
-    try{alert("Kode pemulihan kamu: "+kode+"\n\nSimpan baik-baik. Kode ini dipakai kalau lupa sandi. Kalau hilang, chat admin.")}catch(e){}
-    sheet('<h2>Kode pemulihan kamu</h2><p class="muted" style="margin:0">Kode ini dipakai untuk membuat sandi baru kalau kamu lupa sandi. Simpan baik-baik. Kalau kode hilang, chat admin.</p><div style="font-size:28px;font-weight:800;letter-spacing:3px;text-align:center;margin:14px 0">'+kode+'</div><button class="pay" id="kodeok" type="button">Sudah saya simpan</button>');
+    sheet('<div style="text-align:center"><div style="width:52px;height:52px;border-radius:16px;background:#e3f4ec;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px">&#128273;</div><h2 style="margin:0 0 4px">Kode pemulihan kamu</h2><p class="muted" style="margin:0 0 14px">Dipakai untuk membuat sandi baru kalau kamu lupa sandi.</p></div>'
+      +'<div style="background:#f3faf6;border:1px dashed #0f6b55;border-radius:14px;padding:16px 10px;text-align:center;margin-bottom:12px"><div id="kodetext" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:30px;font-weight:800;letter-spacing:4px;color:#0a3a2f;user-select:all">'+kode+'</div></div>'
+      +'<button class="ghost" id="kodesalin" type="button" style="width:100%;margin-bottom:8px">Salin kode</button>'
+      +'<div style="background:#fff8e6;border-radius:12px;padding:10px 12px;font-size:13px;color:#7a5a00;margin-bottom:12px">Simpan kode ini baik-baik. Kalau kode hilang, chat admin untuk dibantu reset sandi.</div>'
+      +'<button class="pay" id="kodeok" type="button">Sudah saya simpan</button>');
+    $("kodesalin").addEventListener("click",function(){
+      var b=this;salinTeks(kode,function(ok){
+        b.textContent=ok?"Tersalin ✓":"Gagal menyalin, salin manual dari kotak di atas";
+        setTimeout(function(){b.textContent="Salin kode"},2000);
+      });
+    });
     $("kodeok").addEventListener("click",function(){closeSheet();if(onDone)onDone()});
   }
   $("kodebtn").addEventListener("click",function(){
