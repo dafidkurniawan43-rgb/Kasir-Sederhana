@@ -773,6 +773,7 @@ body.guest .gbar{display:flex}
   $("padd").addEventListener("click",function(){
     var n=$("pn").value.trim(),p=num($("pp").value),sv=$("ps").value.trim(),s=sv===""?null:num(sv),c=$("pc").value.replace(/["<>]/g,"").trim(),bv=$("pb").value.trim(),bb=bv===""?null:num(bv),kk=$("pk").value.replace(/["<>\s]/g,"");
     if(!n||p<=0){toast("Isi nama produk dan harga dulu");return}
+    if(kk&&products.some(function(x){return x.k===kk&&x.id!==editId})){toast("Barcode itu sudah dipakai produk lain");return}
     var o={n:n,p:p,s:s,c:c||undefined,b:bb,k:kk||undefined,g:pimg||undefined};
     if(editId){products.forEach(function(x){if(x.id===editId){x.n=n;x.p=p;x.s=s;x.c=c||undefined;x.b=bb;x.k=kk||undefined;x.g=pimg||undefined}});toast(n+" diperbarui")}
     else{o.id=products.reduce(function(m,x){return Math.max(m,x.id)},0)+1;products.push(o);toast(n+" ditambahkan")}
@@ -823,13 +824,19 @@ body.guest .gbar{display:flex}
     save();render();closeSheet();toast("Transaksi dibatalkan");
   }
   function stopScan(){scanning=false;if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}}
+  function okCode(c){
+    if(!/^\d+$/.test(c)||(c.length!==8&&c.length!==12&&c.length!==13))return true;
+    var n=c.length,sum=0;
+    for(var i=0;i<n-1;i++){var d=+c[i];sum+=((n-1-i)%2===1)?d*3:d}
+    return (10-sum%10)%10===+c[n-1];
+  }
   function scan(cb){
     if(!("BarcodeDetector" in window)||!navigator.mediaDevices){toast("Pemindai belum didukung di browser ini. Ketik kodenya di kolom cari.");return}
     sheet('<h2>Pindai barcode</h2><video id="cam" class="cam" playsinline muted></video><button class="link soft" data-act="close" type="button">Batal</button>');
-    var det=new BarcodeDetector();scanning=true;
+    var det=new BarcodeDetector();scanning=true;var lastCode="",hits=0;
     navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(function(s){
       stream=s;var v=$("cam");v.srcObject=s;v.play();
-      (function loop(){if(!scanning)return;det.detect(v).then(function(r){if(r.length&&scanning){var c=r[0].rawValue;closeSheet();cb(c)}else setTimeout(loop,250)}).catch(function(){setTimeout(loop,400)})})();
+      (function loop(){if(!scanning)return;det.detect(v).then(function(r){var c=r.length?String(r[0].rawValue).replace(/\s/g,""):"";if(c&&c===lastCode){hits++}else{lastCode=c;hits=c?1:0}if(hits>=3&&scanning&&okCode(c)){closeSheet();cb(c)}else setTimeout(loop,200)}).catch(function(){setTimeout(loop,400)})})();
     }).catch(function(){closeSheet();toast("Kamera tidak bisa dibuka")});
   }
   function pText(x){
