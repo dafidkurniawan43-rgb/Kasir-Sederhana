@@ -554,7 +554,7 @@ body.guest .gbar{display:flex}
     $("cl").innerHTML=cs.map(function(c){return '<option value="'+esc(c)+'">'}).join("");
     $("prods").innerHTML=(function(){
       var L=products.filter(function(p){return (!cat||(p.c||"Lainnya")===cat)&&(!qs||p.n.toLowerCase().indexOf(qs)>=0||(p.k||"")===qs)});
-      if(!L.length)return products.length?'<div class="empty">Produk tidak ditemukan.</div>':'<div class="empty">Belum ada produk. Tambah produk dulu di tab Produk.</div>';
+      if(!L.length)return products.length?'<div class="empty">Produk tidak ditemukan.</div>':'<div class="empty">Belum ada produk.<br><button class="ghost" id="demo" type="button" style="margin:10px 0 6px">Pakai produk contoh</button><br><small>atau tambah sendiri di tab Produk</small></div>';
       var ic=function(t){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+t+'"/></svg>'};
       return L.map(function(p){
         var q=cart[p.id]||0,tr=p.s!=null,out=tr&&q>=p.s;
@@ -781,7 +781,7 @@ body.guest .gbar{display:flex}
   $("bk").addEventListener("click",function(){
     var d={v:1,products:products,trx:trx,debts:debts,laci:laci,shift:shift,shifts:shifts,shop:shop,qris:qris,raw:raw,logo:logo},a=document.createElement("a");
     a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:"application/json"}));a.download="kasir-cadangan-"+day()+".json";
-    document.body.appendChild(a);a.click();a.remove();toast("Cadangan disimpan");
+    document.body.appendChild(a);a.click();a.remove();try{localStorage.setItem("kasir-lastbk",String(Date.now()))}catch(e){}toast("Cadangan disimpan");
   });
   $("rsb").addEventListener("click",function(){$("rf").click()});
   $("rf").addEventListener("change",function(){
@@ -871,6 +871,12 @@ body.guest .gbar{display:flex}
   });
   try{if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}catch(e){}
 
+  $("prods").addEventListener("click",function(e){if(!e.target.closest("#demo"))return;products=DEF.map(function(p){return Object.assign({},p)});save();render();toast("Produk contoh ditambahkan")});
+  setTimeout(function(){try{
+    if(!trx.length||document.body.classList.contains("guest"))return;
+    var D=864e5,t=+(localStorage.getItem("kasir-lastbk")||0),n=+(localStorage.getItem("kasir-remind")||0);
+    if(Date.now()-t>7*D&&Date.now()-n>D){localStorage.setItem("kasir-remind",String(Date.now()));toast(t?"Sudah lebih dari 7 hari belum simpan cadangan. Buka tab Produk, lalu Simpan cadangan.":"Data belum pernah dicadangkan. Buka tab Produk, lalu Simpan cadangan.")}
+  }catch(e){}},2500);
   load();render();
 })();
 </script>
