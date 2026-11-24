@@ -74,6 +74,7 @@ h2{margin:0;font-family:"Sora",system-ui,sans-serif;font-size:1.05rem;font-weigh
 /* Produk */
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media (min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
 .tile{position:relative;text-align:left;background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:16px;padding:12px;min-height:116px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .tile:hover{border-color:#bcd3cb}
 .tile.sel{border-color:var(--pri);background:#f4faf7}
@@ -133,7 +134,7 @@ h2{margin:0;font-family:"Sora",system-ui,sans-serif;font-size:1.05rem;font-weigh
 .cartbar button{background:var(--gold);color:var(--deep);min-height:44px;padding:0 18px}
 
 /* Tab bawah */
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:720px;bottom:0;z-index:5;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs button{background:transparent;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.76rem;min-height:56px;border-radius:12px}
 .tabs button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .tabs button[aria-selected="true"]{color:var(--pri)}
