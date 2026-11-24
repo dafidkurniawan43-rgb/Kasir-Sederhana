@@ -1213,8 +1213,11 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
         b.disabled=false;
         if(r.ok){$("npw").value="";$("npw2").value="";npwMsg("Sandi berhasil diganti.",false);toast("Sandi berhasil diganti");return}
         if(r.st===401){npwMsg("Sesi habis. Keluar lalu masuk lagi, kemudian coba ulang.",true);return}
-        if(/weak|least 6|short/i.test(JSON.stringify(r.j)))npwMsg("Sandi terlalu lemah. Pakai minimal 6 karakter.",true);
-        else npwMsg("Gagal mengganti sandi. Coba lagi.",true);
+        var jm=JSON.stringify(r.j||{});
+        if(/different from the old|same_password/i.test(jm))npwMsg("Sandi baru tidak boleh sama dengan sandi lama.",true);
+        else if(/pwned|leaked|compromised|easy to guess/i.test(jm))npwMsg("Sandi ini pernah bocor atau terlalu mudah ditebak. Pakai sandi lain.",true);
+        else if(/weak|least 6|short|should contain/i.test(jm))npwMsg("Sandi terlalu lemah. Coba campur huruf, angka, dan simbol.",true);
+        else npwMsg("Gagal mengganti sandi (kode "+r.st+"): "+((r.j&&(r.j.msg||r.j.message||r.j.error_description||r.j.error))||"tidak ada keterangan"),true);
       })
       .catch(function(){b.disabled=false;npwMsg("Tidak ada internet. Coba lagi setelah tersambung.",true)});
   });
