@@ -483,6 +483,11 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
       <p class="muted" id="acct"></p>
       <p class="muted" id="syncmsg" style="margin:8px 0 0"></p>
       <button class="ghost" id="linkbtn" type="button" style="width:100%;margin-top:8px">Cek status toko online</button>
+      <div id="kirimbuktiBox" hidden style="margin-top:12px">
+        <p class="muted" style="margin:0 0 6px">Bukti pengajuan atasan belum terkirim. Pilih foto tempat usaha (yang terlihat nama tokonya), lalu kirim.</p>
+        <input id="kbFile" type="file" accept="image/*,application/pdf" style="width:100%;padding:8px 0">
+        <button class="ghost" id="kbKirim" type="button" style="width:100%;margin-top:8px">Kirim bukti pengajuan</button>
+      </div>
       <div id="migbox" hidden><p class="muted">Ada data lama di HP ini (produk, transaksi, nama toko) yang dibuat sebelum ada akun.</p><button class="ghost" id="mig" type="button" style="width:100%;margin-bottom:8px">Pindahkan data lama ke akun ini</button></div>
       <button class="ghost" id="kodebtn" type="button" style="width:100%;margin-bottom:8px">Buat kode pemulihan</button>
       <button class="ghost" id="logout" type="button" style="width:100%">Keluar dari akun</button>
@@ -688,6 +693,7 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
       var pilih=localStorage.getItem("kasir-role-pilih")||"";
       if(!a){CL.ready=false;
         return rest("rpc/status_pengajuan_saya",{method:"POST",body:{}}).catch(function(){return null}).then(function(st){
+          var kb=$("kirimbuktiBox");if(kb)kb.hidden=!(pilih==="atasan"&&!st);
           setSync(st==="menunggu"?"Pengajuan atasan kamu sedang diperiksa admin. Tunggu persetujuan.":st==="ditolak"?"Pengajuan atasan ditolak admin. Hubungi admin lewat WhatsApp.":pilih==="karyawan"?"Akun kamu belum diundang atasan. Minta atasan menambahkan username kamu di tab Saya.":"Belum terhubung ke toko online.");
         });
       }
@@ -703,6 +709,15 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
         setSync("Tersambung ke toko online sebagai "+(CL.peran==="pemilik"?"pemilik":"karyawan")+".");
       });
     }).catch(function(e){setSync("Belum bisa tersambung ke server. Data tetap tersimpan di HP ini.")});
+  }
+  function uploadBuktiM(file){
+    var s=sbSes();
+    var ext=((file.name||"").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+    var path=s.id+"/bukti-"+Date.now()+"."+ext;
+    return fetch(window.__sbc.U+"/storage/v1/object/bukti-atasan/"+path,{method:"POST",headers:{"apikey":window.__sbc.K,"Authorization":"Bearer "+s.at,"Content-Type":file.type||"application/octet-stream"},body:file}).then(function(r){
+      if(!r.ok)return r.text().then(function(t){throw new Error((t||"").slice(0,160)||("kode "+r.status))});
+      return path;
+    });
   }
   function retryLater(){clearTimeout(syncT);syncT=setTimeout(syncOut,30000)}
   function scheduleSync(){if(!CL.ready)return;clearTimeout(syncT);syncT=setTimeout(syncOut,1500)}
@@ -919,6 +934,13 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
   $("whobtn").addEventListener("click",whoSheet);
   $("staddbtn").addEventListener("click",addStaffSheet);
   $("invbtn").addEventListener("click",inviteSheet);
+  $("kbKirim").addEventListener("click",function(){
+    var f=$("kbFile").files[0];var s=sbSes();
+    if(!f){toast("Pilih foto bukti dulu");return}
+    if(f.size>5*1024*1024){toast("Bukti terlalu besar. Maksimal 5 MB.");return}
+    if(!s){toast("Masuk dulu");return}
+    uploadBuktiM(f).then(function(path){return rest("rpc/ajukan_atasan",{method:"POST",body:{p_nama_toko:s.sh||s.u,p_wa:s.wa||"",p_bukti:path}})}).then(function(){toast("Bukti terkirim. Tunggu persetujuan admin.");syncIn()}).catch(function(e){toast("Gagal: "+e.message)});
+  });
   setTimeout(function(){if(sbSes())syncIn()},0);
   $("linkbtn").addEventListener("click",function(){
     var s=sbSes();if(!s)return;
@@ -1166,9 +1188,9 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   function setRole(r){role=r;applyRole()}
   function uploadBukti(tok,uid,file){
     var ext=((file.name||"").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
-    var path=uid+"/bukti."+ext;
-    return fetch(U+"/storage/v1/object/bukti-atasan/"+path,{method:"POST",headers:{"apikey":K,"Authorization":"Bearer "+tok,"Content-Type":file.type||"application/octet-stream","x-upsert":"true"},body:file}).then(function(r){
-      if(!r.ok)throw new Error("unggah bukti gagal (kode "+r.status+")");
+    var path=uid+"/bukti-"+Date.now()+"."+ext;
+    return fetch(U+"/storage/v1/object/bukti-atasan/"+path,{method:"POST",headers:{"apikey":K,"Authorization":"Bearer "+tok,"Content-Type":file.type||"application/octet-stream"},body:file}).then(function(r){
+      if(!r.ok)return r.text().then(function(t){throw new Error((t||"").slice(0,160)||("kode "+r.status))});
       return path;
     });
   }
