@@ -399,6 +399,16 @@ body.guest .gbar{display:flex}
       <input type="file" id="rf" accept="application/json,.json" hidden>
     </section>
     <section>
+      <div class="head"><h2>Profil</h2></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><span id="pfav" style="width:48px;height:48px;border-radius:50%;background:#f0b93a;color:#0a3a2f;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px">?</span><div><b id="pfname">-</b><div class="muted" id="pfuser"></div></div></div>
+      <label style="display:block;font-size:13px;margin:8px 0 4px">Nama toko</label>
+      <input id="pfshop" maxlength="40" placeholder="Nama warung kamu" style="width:100%;box-sizing:border-box">
+      <label style="display:block;font-size:13px;margin:8px 0 4px">Nomor WhatsApp</label>
+      <input id="pfwa" inputmode="numeric" maxlength="16" placeholder="08123456789" style="width:100%;box-sizing:border-box">
+      <p class="muted" id="pfmsg" hidden style="margin:8px 0"></p>
+      <button class="ghost" id="pfsave" type="button" style="width:100%;margin-top:8px">Simpan profil</button>
+    </section>
+    <section>
       <div class="head"><h2>Akun</h2></div>
       <p class="muted" id="acct"></p>
       <div id="migbox" hidden><p class="muted">Ada data lama di HP ini (produk, transaksi, nama toko) yang dibuat sebelum ada akun.</p><button class="ghost" id="mig" type="button" style="width:100%;margin-bottom:8px">Pindahkan data lama ke akun ini</button></div>
@@ -970,6 +980,25 @@ body.guest .gbar{display:flex}
       }else err(why(r));
     });
   });
+  function pfMsg(t,bad){var m=$("pfmsg");m.textContent=t;m.hidden=!t;m.style.color=bad?"#b42318":""}
+  function pfFill(){var x=ses();if(!x)return;$("pfav").textContent=(x.u||"?").charAt(0).toUpperCase();$("pfname").textContent=x.sh||"Belum ada nama toko";$("pfuser").textContent="@"+(x.u||"");$("pfshop").value=x.sh||"";$("pfwa").value=(x.wa||"").replace(/^62/,"0")}
+  $("pfsave").addEventListener("click",function(){
+    var x=ses();if(!x||!x.at)return;
+    var sh=$("pfshop").value.trim().replace(/\s+/g," ");
+    var w=$("pfwa").value.replace(/\D/g,"");
+    if(w.charAt(0)==="0")w="62"+w.slice(1);else if(w.charAt(0)==="8")w="62"+w;
+    if(sh.length<2){pfMsg("Nama toko minimal 2 huruf.",true);return}
+    if(w&&!/^62\d{9,13}$/.test(w)){pfMsg("Nomor WhatsApp tidak valid. Contoh: 08123456789",true);return}
+    var b=$("pfsave");b.disabled=true;pfMsg("Menyimpan...",false);
+    fetch(U+"/auth/v1/user",{method:"PUT",headers:{"Content-Type":"application/json","apikey":K,"Authorization":"Bearer "+x.at},body:JSON.stringify({data:{shop:sh,wa:w}})})
+      .then(function(r){
+        if(r.ok){x.sh=sh;x.wa=w;put(x);try{localStorage.setItem("kasir-warung",sh)}catch(e){}pfFill();pfMsg("Profil tersimpan.",false);setTimeout(function(){location.reload()},700)}
+        else pfMsg("Gagal menyimpan. Coba keluar lalu masuk lagi.",true)
+      })
+      .catch(function(){pfMsg("Tidak ada koneksi internet.",true)})
+      .then(function(){b.disabled=false});
+  });
+  pfFill();
   $("logout").addEventListener("click",function(){
     if(!confirm("Keluar dari akun ini?"))return;
     var s=ses();if(s&&s.at)api("/auth/v1/logout",{},s.at);
