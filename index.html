@@ -467,6 +467,8 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
     </section>
     <section>
       <div class="head"><h2>Ganti sandi</h2></div>
+      <label style="display:block;font-size:13px;margin:8px 0 4px">Sandi lama</label>
+      <input id="npwold" type="password" autocomplete="current-password" placeholder="Sandi yang sekarang dipakai" style="width:100%;box-sizing:border-box">
       <label style="display:block;font-size:13px;margin:8px 0 4px">Sandi baru</label>
       <input id="npw" type="password" autocomplete="new-password" placeholder="Minimal 6 karakter" style="width:100%;box-sizing:border-box">
       <label style="display:block;font-size:13px;margin:8px 0 4px">Ulangi sandi baru</label>
@@ -1203,18 +1205,21 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   function npwMsg(t,bad){var m=$("npwmsg");m.textContent=t;m.hidden=!t;m.style.color=bad?"#b42318":""}
   $("npwsave").addEventListener("click",function(){
     var x=ses();if(!x||!x.at){npwMsg("Masuk dulu untuk ganti sandi.",true);return}
-    var p=$("npw").value,p2=$("npw2").value;
+    var p=$("npw").value,p2=$("npw2").value,old=$("npwold").value;
+    if(!old){npwMsg("Isi sandi lama dulu.",true);return}
     if(p.length<6){npwMsg("Sandi baru minimal 6 karakter.",true);return}
     if(p!==p2){npwMsg("Ulangi sandi tidak sama.",true);return}
     var b=$("npwsave");b.disabled=true;npwMsg("Menyimpan...",false);
-    fetch(U+"/auth/v1/user",{method:"PUT",headers:{"Content-Type":"application/json","apikey":K,"Authorization":"Bearer "+x.at},body:JSON.stringify({password:p})})
+    var pw=function(){return fetch(U+"/auth/v1/user",{method:"PUT",headers:{"Content-Type":"application/json","apikey":K,"Authorization":"Bearer "+x.at},body:JSON.stringify({password:p,current_password:old})})};
+    pw()
       .then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {ok:r.ok,st:r.status,j:j}})})
       .then(function(r){
         b.disabled=false;
-        if(r.ok){$("npw").value="";$("npw2").value="";npwMsg("Sandi berhasil diganti.",false);toast("Sandi berhasil diganti");return}
+        if(r.ok){$("npwold").value="";$("npw").value="";$("npw2").value="";npwMsg("Sandi berhasil diganti.",false);toast("Sandi berhasil diganti");return}
         if(r.st===401){npwMsg("Sesi habis. Keluar lalu masuk lagi, kemudian coba ulang.",true);return}
         var jm=JSON.stringify(r.j||{});
-        if(/different from the old|same_password/i.test(jm))npwMsg("Sandi baru tidak boleh sama dengan sandi lama.",true);
+        if(/current.?password|invalid.?credentials|wrong.?password/i.test(jm))npwMsg("Sandi lama salah.",true);
+        else if(/different from the old|same_password/i.test(jm))npwMsg("Sandi baru tidak boleh sama dengan sandi lama.",true);
         else if(/pwned|leaked|compromised|easy to guess/i.test(jm))npwMsg("Sandi ini pernah bocor atau terlalu mudah ditebak. Pakai sandi lain.",true);
         else if(/weak|least 6|short|should contain/i.test(jm))npwMsg("Sandi terlalu lemah. Coba campur huruf, angka, dan simbol.",true);
         else npwMsg("Gagal mengganti sandi (kode "+r.st+"): "+((r.j&&(r.j.msg||r.j.message||r.j.error_description||r.j.error))||"tidak ada keterangan"),true);
