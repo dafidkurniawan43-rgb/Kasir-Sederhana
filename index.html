@@ -367,6 +367,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
 #rng button,.chips button{transition:background-color .2s ease,color .2s ease,transform .12s ease}
 body.karyawan .tabs{grid-template-columns:repeat(2,1fr)}
 body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-tab="laporan"],body.karyawan #linkbtn,body.karyawan #staddbtn,body.karyawan #invbtn{display:none}
+body.belum-verif .tabs button[data-tab="laporan"],body.belum-verif .tabs button[data-tab="produk"]{display:none}
+body.belum-verif .tabs{grid-template-columns:repeat(2,1fr)}
+body.belum-verif .owner-only{display:none!important}
 </style>
 </head>
 <body data-tab="kasir">
@@ -482,6 +485,7 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
       <div class="head"><h2>Akun</h2></div>
       <p class="muted" id="acct"></p>
       <p class="muted" id="syncmsg" style="margin:8px 0 0"></p>
+      <p id="verifNote" hidden style="margin:8px 0 0;font-size:14px;color:#b42318">Akun atasan belum terverifikasi. Kirim bukti pengajuan dulu. Laporan, Produk, PIN, karyawan, dan cadangan akan terbuka setelah disetujui admin.</p>
       <button class="ghost" id="linkbtn" type="button" style="width:100%;margin-top:8px">Cek status toko online</button>
       <div id="kirimbuktiBox" hidden style="margin-top:12px">
         <p class="muted" style="margin:0 0 6px">Bukti pengajuan atasan belum terkirim. Pilih foto tempat usaha (yang terlihat nama tokonya), lalu kirim.</p>
@@ -670,14 +674,26 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
   function whoName(){if(!who)return "Pemilik";var k=staff.filter(function(x){return x.id===who})[0];return k?k.n:"Pemilik"}
   function sbSes(){return window.__sbc?window.__sbc.ses():null}
   function setSync(t){var m=$("syncmsg");if(m)m.textContent=t}
-  function rest(path,opts){
+  function refreshM(){
+    var s=sbSes();if(!s||!s.rt)return Promise.reject(new Error("Sesi habis. Keluar lalu masuk lagi."));
+    return fetch(window.__sbc.U+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"Content-Type":"application/json","apikey":window.__sbc.K},body:JSON.stringify({refresh_token:s.rt})}).then(function(r){
+      return r.json().catch(function(){return {}}).then(function(j){
+        if(!r.ok||!j.access_token)throw new Error("Sesi habis. Keluar lalu masuk lagi.");
+        s.at=j.access_token;s.rt=j.refresh_token||s.rt;s.exp=j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600);
+        window.__sbc.put(s);return s;
+      });
+    });
+  }
+  function rest(path,opts,retry){
     var s=sbSes();if(!s||!s.at)return Promise.reject(new Error("Belum login"));opts=opts||{};
     var h=Object.assign({"Content-Type":"application/json","apikey":window.__sbc.K,"Authorization":"Bearer "+s.at},opts.headers||{});
     return fetch(window.__sbc.U+"/rest/v1/"+path,{method:opts.method||"GET",headers:h,body:opts.body!==undefined?JSON.stringify(opts.body):undefined}).then(function(r){
-      if(!r.ok)return r.json().catch(function(){return {}}).then(function(j){throw new Error(j.message||("Gagal, kode "+r.status))});
+      if(r.status===401&&!retry)return refreshM().then(function(){return rest(path,opts,true)});
+      if(!r.ok)return r.text().then(function(t){var j={};try{j=t?JSON.parse(t):{}}catch(e){}throw new Error(j.message||j.msg||("Gagal, kode "+r.status))});
       return r.text().then(function(t){return t?JSON.parse(t):null});
     });
   }
+
   function rpc(fn,args){return rest("rpc/"+fn,{method:"POST",body:args})}
   function myLink(){var s=sbSes();return rest("anggota?select=toko_id,peran,nama&user_id=eq."+s.id).then(function(rows){return rows&&rows[0]||null})}
   function applyRemote(rows){
@@ -691,7 +707,7 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
     setSync("Menghubungkan ke toko online...");
     return myLink().then(function(a){
       var pilih=localStorage.getItem("kasir-role-pilih")||"";
-      if(!a){CL.ready=false;
+      if(!a){CL.ready=false;setVerif(pilih!=="atasan");
         return rest("rpc/status_pengajuan_saya",{method:"POST",body:{}}).catch(function(){return null}).then(function(st){
           var kb=$("kirimbuktiBox");if(kb)kb.hidden=!(pilih==="atasan"&&(!st||st==="ditolak"));
           setSync(st==="menunggu"?"Pengajuan atasan kamu sedang diperiksa admin. Tunggu persetujuan.":st==="ditolak"?"Pengajuan atasan ditolak admin. Hubungi admin lewat WhatsApp.":pilih==="karyawan"?"Akun kamu belum diundang atasan. Minta atasan menambahkan username kamu di tab Saya.":"Belum terhubung ke toko online.");
@@ -701,14 +717,23 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
         alert("Akun ini terdaftar sebagai "+(a.peran==="pemilik"?"atasan":"karyawan")+". Pilih peran yang sesuai saat masuk.");
         window.__sbc.put(null);localStorage.removeItem("kasir-role-pilih");location.reload();return;
       }
-      CL.toko=a.toko_id;CL.peran=a.peran;document.body.classList.toggle("karyawan",a.peran==="karyawan");
+      CL.toko=a.toko_id;CL.peran=a.peran;document.body.classList.toggle("karyawan",a.peran==="karyawan");setVerif(true);
       return rest("data_toko?select=jenis,client_id,isi&toko_id=eq."+a.toko_id+"&limit=10000").then(function(rows){
         if(rows.length)applyRemote(rows);
         CL.ready=true;
         if(!rows.length&&CL.peran==="pemilik")return syncOut();
         setSync("Tersambung ke toko online sebagai "+(CL.peran==="pemilik"?"pemilik":"karyawan")+".");
       });
-    }).catch(function(e){setSync("Belum bisa tersambung ke server. Data tetap tersimpan di HP ini.")});
+    }).catch(function(e){
+      setSync("Belum bisa tersambung ke server ("+(e&&e.message||"tidak diketahui")+"). Data tetap tersimpan di HP ini.");
+      var kb=$("kirimbuktiBox");if(kb)kb.hidden=localStorage.getItem("kasir-role-pilih")!=="atasan";
+      if(localStorage.getItem("kasir-role-pilih")==="atasan")setVerif(localStorage.getItem("kasir-verif")==="1");
+    });
+  }
+  function setVerif(v){
+    document.body.classList.toggle("belum-verif",!v);
+    var n=$("verifNote");if(n)n.hidden=!!v;
+    try{localStorage.setItem("kasir-verif",v?"1":"0")}catch(e){}
   }
   function uploadBuktiM(file){
     var s=sbSes();
@@ -941,6 +966,8 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
     if(!s){toast("Masuk dulu");return}
     uploadBuktiM(f).then(function(path){return rest("rpc/ajukan_atasan",{method:"POST",body:{p_nama_toko:s.sh||s.u,p_wa:s.wa||"",p_bukti:path}})}).then(function(){toast("Bukti terkirim. Tunggu persetujuan admin.");syncIn()}).catch(function(e){toast("Gagal: "+e.message)});
   });
+  if(localStorage.getItem("kasir-role-pilih")==="atasan"&&localStorage.getItem("kasir-verif")!=="1")document.body.classList.add("belum-verif");
+  document.querySelectorAll("#s-akun section").forEach(function(sec){var h=sec.querySelector("h2");if(h&&/Karyawan|Cadangan|PIN pemilik/.test(h.textContent))sec.classList.add("owner-only")});
   setTimeout(function(){if(sbSes())syncIn()},0);
   $("linkbtn").addEventListener("click",function(){
     var s=sbSes();if(!s)return;
