@@ -463,11 +463,21 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
       <button class="ghost" id="invbtn" type="button" style="width:100%;margin-top:8px">Undang karyawan online (email)</button>
     </section>
     <section>
+      <div class="head"><h2>Ganti sandi</h2></div>
+      <label style="display:block;font-size:13px;margin:8px 0 4px">Sandi baru</label>
+      <input id="npw" type="password" autocomplete="new-password" placeholder="Minimal 6 karakter" style="width:100%;box-sizing:border-box">
+      <label style="display:block;font-size:13px;margin:8px 0 4px">Ulangi sandi baru</label>
+      <input id="npw2" type="password" autocomplete="new-password" placeholder="Ketik sandi baru lagi" style="width:100%;box-sizing:border-box">
+      <p class="muted" id="npwmsg" hidden style="margin:8px 0"></p>
+      <button class="ghost" id="npwsave" type="button" style="width:100%;margin-top:8px">Simpan sandi baru</button>
+    </section>
+    <section>
       <div class="head"><h2>Akun</h2></div>
       <p class="muted" id="acct"></p>
       <p class="muted" id="syncmsg" style="margin:8px 0 0"></p>
       <button class="ghost" id="linkbtn" type="button" style="width:100%;margin-top:8px">Hubungkan toko online</button>
       <div id="migbox" hidden><p class="muted">Ada data lama di HP ini (produk, transaksi, nama toko) yang dibuat sebelum ada akun.</p><button class="ghost" id="mig" type="button" style="width:100%;margin-bottom:8px">Pindahkan data lama ke akun ini</button></div>
+      <button class="ghost" id="kodebtn" type="button" style="width:100%;margin-bottom:8px">Buat kode pemulihan</button>
       <button class="ghost" id="logout" type="button" style="width:100%">Keluar dari akun</button>
     </section>
     <section>
@@ -531,6 +541,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
       <input id="aw" name="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="08123456789"></div>
       <label for="ap">Sandi <button type="button" class="eye" id="eye">Lihat</button></label>
       <input id="ap" name="password" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter">
+      <button type="button" class="link" id="lupa" style="display:block;margin:6px 0 0;font-size:14px">Lupa sandi?</button>
       <div class="reg" hidden><label for="ap2">Ulangi sandi</label>
       <input id="ap2" name="password2" type="password" autocomplete="new-password" placeholder="Ketik sandi lagi"></div>
       <div class="aerr" id="aerr" hidden></div>
@@ -1126,6 +1137,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
     $("as").textContent=reg?"Daftar gratis, cukup username, WhatsApp, dan sandi.":"Masuk ke akun Kasir Sederhana kamu.";
     $("asub").textContent=reg?"Daftar akun":"Masuk";
     $("ap").setAttribute("autocomplete",reg?"new-password":"current-password");
+    $("lupa").hidden=reg;
     err("");
   }
   $("tl").addEventListener("click",function(){setMode("login")});
@@ -1158,7 +1170,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
       busy=false;$("asub").disabled=false;$("asub").textContent=old;
       if(r.ok&&r.j&&r.j.access_token){
         var n=toSes(r.j);if(!n.u)n.u=u;if(!n.wa&&w)n.wa=w;if(!n.sh&&sh)n.sh=sh;put(n);try{if(n.sh&&!localStorage.getItem("kasir-warung"))localStorage.setItem("kasir-warung",n.sh)}catch(e){}
-        $("ap").value="";$("ap2").value="";$("ash").value="";location.reload();
+        $("ap").value="";$("ap2").value="";$("ash").value="";if(reg){simpanKode(n.at,function(kode,msg){if(kode)showKodeBox(kode,function(){location.reload()});else{toast(msg);location.reload()}})}else location.reload();
       }else if(r.ok&&reg){
         err("Akun dibuat, tapi verifikasi email di Supabase masih aktif. Matikan 'Confirm email' lalu coba Masuk.");
       }else err(why(r));
@@ -1183,6 +1195,57 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
       .then(function(){b.disabled=false});
   });
   pfFill();
+  function npwMsg(t,bad){var m=$("npwmsg");m.textContent=t;m.hidden=!t;m.style.color=bad?"#b42318":""}
+  $("npwsave").addEventListener("click",function(){
+    var x=ses();if(!x||!x.at){npwMsg("Masuk dulu untuk ganti sandi.",true);return}
+    var p=$("npw").value,p2=$("npw2").value;
+    if(p.length<6){npwMsg("Sandi baru minimal 6 karakter.",true);return}
+    if(p!==p2){npwMsg("Ulangi sandi tidak sama.",true);return}
+    var b=$("npwsave");b.disabled=true;npwMsg("Menyimpan...",false);
+    fetch(U+"/auth/v1/user",{method:"PUT",headers:{"Content-Type":"application/json","apikey":K,"Authorization":"Bearer "+x.at},body:JSON.stringify({password:p})})
+      .then(function(r){return r.json().catch(function(){return {}}).then(function(j){return {ok:r.ok,st:r.status,j:j}})})
+      .then(function(r){
+        b.disabled=false;
+        if(r.ok){$("npw").value="";$("npw2").value="";npwMsg("Sandi berhasil diganti.",false);toast("Sandi berhasil diganti");return}
+        if(r.st===401){npwMsg("Sesi habis. Keluar lalu masuk lagi, kemudian coba ulang.",true);return}
+        if(/weak|least 6|short/i.test(JSON.stringify(r.j)))npwMsg("Sandi terlalu lemah. Pakai minimal 6 karakter.",true);
+        else npwMsg("Gagal mengganti sandi. Coba lagi.",true);
+      })
+      .catch(function(){b.disabled=false;npwMsg("Tidak ada internet. Coba lagi setelah tersambung.",true)});
+  });
+  function rpc(fn,body,tok){return fetch(U+"/rest/v1/rpc/"+fn,{method:"POST",headers:{"Content-Type":"application/json","apikey":K,"Authorization":"Bearer "+(tok||K)},body:JSON.stringify(body)}).then(function(r){return r.text().then(function(t){var j={};try{j=t?JSON.parse(t):{}}catch(e){}return {ok:r.ok,st:r.status,j:j}})}).catch(function(){return {net:true,j:{}}})}
+  function rpcMsg(r){if(r.net)return "Tidak ada internet. Coba lagi setelah tersambung.";return (r.j&&(r.j.message||r.j.msg))||"Gagal. Coba lagi."}
+  function genKode(){var a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(8);crypto.getRandomValues(b);var s="";for(var i=0;i<8;i++)s+=a.charAt(b[i]%a.length);return s}
+  function simpanKode(tok,cb){var raw=genKode();rpc("buat_kode_pemulihan",{p_kode:raw},tok).then(function(r){if(r.ok)cb(raw.slice(0,4)+"-"+raw.slice(4),null);else cb(null,rpcMsg(r))})}
+  function showKodeBox(kode,onDone){
+    sheet('<h2>Kode pemulihan kamu</h2><p class="muted" style="margin:0">Kode ini dipakai untuk membuat sandi baru kalau kamu lupa sandi. Simpan baik-baik. Kalau kode hilang, chat admin.</p><div style="font-size:28px;font-weight:800;letter-spacing:3px;text-align:center;margin:14px 0">'+kode+'</div><button class="pay" id="kodeok" type="button">Sudah saya simpan</button>');
+    $("kodeok").addEventListener("click",function(){closeSheet();if(onDone)onDone()});
+  }
+  $("kodebtn").addEventListener("click",function(){
+    var x=ses();if(!x||!x.at){toast("Masuk dulu");return}
+    if(!confirm("Buat kode pemulihan baru? Kode lama tidak bisa dipakai lagi."))return;
+    simpanKode(x.at,function(kode,msg){if(kode)showKodeBox(kode,null);else toast(msg)});
+  });
+  $("lupa").addEventListener("click",function(){
+    sheet('<h2>Lupa sandi</h2><p class="muted" style="margin:0">Masukkan username, kode pemulihan, dan sandi baru.</p><input id="lu" autocapitalize="none" autocomplete="username" placeholder="Username"><input id="lk" autocapitalize="characters" autocomplete="off" placeholder="Kode pemulihan (contoh: K7M2-QX9P)"><input id="ls" type="password" autocomplete="new-password" placeholder="Sandi baru (minimal 6 karakter)"><p class="muted" id="lmsg" hidden style="margin:0;color:#b42318"></p><button class="pay" id="lgo" type="button">Buat sandi baru</button><button class="link soft" data-act="close" type="button">Batal</button>');
+    $("lu").value=$("au").value.trim();
+    var m=$("lmsg");function fail(t){m.textContent=t;m.hidden=!t}
+    $("lgo").addEventListener("click",function(){
+      var u=$("lu").value.trim(),k=$("lk").value.trim(),sb=$("ls").value;
+      if(!u){fail("Isi username.");return}
+      if(!k){fail("Isi kode pemulihan.");return}
+      if(sb.length<6){fail("Sandi baru minimal 6 karakter.");return}
+      var b=$("lgo");b.disabled=true;fail("");
+      rpc("reset_sandi_pakai_kode",{p_username:u,p_kode:k.replace(/[^A-Za-z0-9]/g,""),p_sandi_baru:sb},null).then(function(r){
+        b.disabled=false;
+        if(r.ok){closeSheet();$("au").value=u;$("ap").value="";toast("Sandi berhasil diganti. Silakan masuk.");return}
+        var t=rpcMsg(r);
+        if(/tidak cocok/i.test(t))t="Username atau kode salah. Kalau kode hilang, chat admin.";
+        if(/minimal 6/i.test(t))t="Sandi baru minimal 6 karakter.";
+        fail(t);
+      });
+    });
+  });
   $("logout").addEventListener("click",function(){
     if(!confirm("Keluar dari akun ini?"))return;
     var s=ses();if(s&&s.at)api("/auth/v1/logout",{},s.at);
