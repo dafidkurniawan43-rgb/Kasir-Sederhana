@@ -842,7 +842,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
   function dayTotal(){var s=sod(0);return trx.reduce(function(a,x){return a+(x.ts>=s&&!x.v&&!x.rs?x.t:0)},0)}
   function laciBal(){return laci.start+laci.log.filter(function(e){return e.ts>=laci.ts}).reduce(function(s,e){return s+e.a},0)}
   function lc(a,n){laci.log.push({ts:Date.now(),a:a,n:n});if(laci.log.length>1500)laci.log.splice(0,200)}
-  function sheet(h){$("sbox").innerHTML=h;$("sheet").hidden=false}
+  function sheet(h){$("sbox").removeAttribute("data-free");$("sbox").innerHTML=h;$("sheet").hidden=false}
   function closeSheet(){$("sheet").hidden=true;stopScan()}
   function sText(x){return (shop||"Kasir")+"\n"+dm(x.ts)+" "+hm(x.ts)+"\n"+(x.no?"No. Pesanan #"+String(x.no).padStart(3,"0")+"\n":"")+(x.bn&&x.m!=="utang"?"Pembeli: "+x.bn+"\n":"")+"\n"+x.it.map(function(i){return i.q+" x "+i.n+" = "+rp(i.p*i.q)}).join("\n")+"\n\nTotal: "+rp(x.t)+"\n"+(x.m==="tunai"?"Tunai: "+rp(x.pd)+"\nKembali: "+rp(x.ch):x.m==="qris"?"Bayar: QRIS":"Belum lunas, utang a.n. "+x.nm)+"\n\nTerima kasih"}
   function rcptHtml(x){
@@ -1247,7 +1247,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   });
   $("lupa").addEventListener("click",function(){
     sheet('<h2>Lupa sandi</h2><p class="muted" style="margin:0">Masukkan username, kode pemulihan, dan sandi baru.</p><input id="lu" autocapitalize="none" autocomplete="username" placeholder="Username"><input id="lk" autocapitalize="characters" autocomplete="off" placeholder="Kode pemulihan (contoh: K7M2-QX9P)"><input id="ls" type="password" autocomplete="new-password" placeholder="Sandi baru (minimal 6 karakter)"><p class="muted" id="lmsg" hidden style="margin:0;color:#b42318"></p><button class="pay" id="lgo" type="button">Buat sandi baru</button><button class="link soft" data-act="close" type="button">Batal</button>');
-    $("lu").value=$("au").value.trim();
+    $("sbox").setAttribute("data-free","1");$("lu").value=$("au").value.trim();
     var m=$("lmsg");function fail(t){m.textContent=t;m.hidden=!t}
     $("lgo").addEventListener("click",function(){
       var u=$("lu").value.trim(),k=$("lk").value.trim(),sb=$("ls").value;
@@ -1284,7 +1284,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   $("lno").addEventListener("click",function(){$("lock").hidden=true});
   $("aclose").addEventListener("click",function(){$("auth").hidden=true;err("")});
   function guest(){return document.body.classList.contains("guest")}
-  function free(t){return t&&t.closest&&t.closest("#auth,#welcome,#lock,#gbtn,#gwho,#gbar-btn,[data-add],[data-sub]")}
+  function free(t){return t&&t.closest&&t.closest("#auth,#sbox[data-free],#welcome,#lock,#gbtn,#gwho,#gbar-btn,[data-add],[data-sub]")}
   document.addEventListener("click",function(e){
     if(!guest()||free(e.target))return;
     e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();$("lock").hidden=false;
