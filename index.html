@@ -50,6 +50,8 @@ input::placeholder{color:#9bada7}
 .shop{display:flex;align-items:center;gap:10px}
 .logo{width:44px;height:44px;border-radius:13px;background:var(--gold);color:var(--deep);display:grid;place-items:center;flex:0 0 auto}
 [hidden]{display:none!important}
+*,*::before,*::after{-webkit-tap-highlight-color:transparent}
+button:focus:not(:focus-visible){outline:none}
 .wn{font-family:"Sora",system-ui,sans-serif;font-size:1.3rem;font-weight:700;letter-spacing:-.01em;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:0 18px;min-height:48px;color:#fff;text-align:left;min-width:0;max-width:calc(100% - 54px);display:inline-flex;align-items:center;gap:10px}
 .wn .wt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wn::after{content:"";width:18px;height:18px;flex:0 0 auto;opacity:.9;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z'/%3E%3C/svg%3E") center/contain no-repeat}
@@ -269,6 +271,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 
 #auth{position:fixed;inset:0;z-index:60;background:var(--deep);background-image:radial-gradient(120% 90% at 100% 0%,#0f5a49 0%,transparent 60%);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
 #auth[hidden]{display:none}
+#sheet{z-index:70}
 .acard{background:#fff;border-radius:24px;padding:22px 18px;width:100%;max-width:380px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .acard .ai{width:56px;height:56px;border-radius:16px;display:block;margin:0 auto 8px}
 .acard h2{margin:0;text-align:center;font-family:"Sora",system-ui,sans-serif;font-size:1.25rem}
