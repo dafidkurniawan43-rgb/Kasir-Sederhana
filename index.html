@@ -1226,8 +1226,9 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
     function cadangan(){var ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.top="-1000px";ta.style.opacity="0";document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand("copy")}catch(e){}ta.remove();cb(ok)}
     if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(function(){cb(true)},cadangan)}else cadangan();
   }
+  function sheetFree(h){sheet(h);$("sbox").setAttribute("data-free","1")}
   function showKodeBox(kode,onDone){
-    sheet('<div style="text-align:center"><div style="width:52px;height:52px;border-radius:16px;background:#e3f4ec;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px">&#128273;</div><h2 style="margin:0 0 4px">Kode pemulihan kamu</h2><p class="muted" style="margin:0 0 14px">Dipakai untuk membuat sandi baru kalau kamu lupa sandi.</p></div>'
+    sheetFree('<div style="text-align:center"><div style="width:52px;height:52px;border-radius:16px;background:#e3f4ec;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px">&#128273;</div><h2 style="margin:0 0 4px">Kode pemulihan kamu</h2><p class="muted" style="margin:0 0 14px">Dipakai untuk membuat sandi baru kalau kamu lupa sandi.</p></div>'
       +'<div style="background:#f3faf6;border:1px dashed #0f6b55;border-radius:14px;padding:16px 10px;text-align:center;margin-bottom:12px"><div id="kodetext" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:30px;font-weight:800;letter-spacing:4px;color:#0a3a2f;user-select:all">'+kode+'</div></div>'
       +'<button class="ghost" id="kodesalin" type="button" style="width:100%;margin-bottom:8px">Salin kode</button>'
       +'<div style="background:#fff8e6;border-radius:12px;padding:10px 12px;font-size:13px;color:#7a5a00;margin-bottom:12px">Simpan kode ini baik-baik. Kalau kode hilang, chat admin untuk dibantu reset sandi.</div>'
@@ -1243,7 +1244,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   $("kodebtn").addEventListener("click",function(){
     var x=ses();if(!x||!x.at){toast("Masuk dulu");return}
     if(!confirm("Buat kode pemulihan baru? Kode lama tidak bisa dipakai lagi."))return;
-    simpanKode(x.at,function(kode,msg){if(kode)showKodeBox(kode,null);else sheet('<h2>Kode belum berhasil dibuat</h2><p class="muted">'+esc(msg)+'</p><button class="link soft" data-act="close" type="button">Tutup</button>')});
+    simpanKode(x.at,function(kode,msg){if(kode)showKodeBox(kode,null);else sheetFree('<h2>Kode belum berhasil dibuat</h2><p class="muted">'+esc(msg)+'</p><button class="link soft" data-act="close" type="button">Tutup</button>')});
   });
   $("lupa").addEventListener("click",function(){
     sheet('<h2>Lupa sandi</h2><p class="muted" style="margin:0">Masukkan username, kode pemulihan, dan sandi baru.</p><input id="lu" autocapitalize="none" autocomplete="username" placeholder="Username"><input id="lk" autocapitalize="characters" autocomplete="off" placeholder="Kode pemulihan (contoh: K7M2-QX9P)"><input id="ls" type="password" autocomplete="new-password" placeholder="Sandi baru (minimal 6 karakter)"><p class="muted" id="lmsg" hidden style="margin:0;color:#b42318"></p><button class="pay" id="lupago" type="button">Buat sandi baru</button><button class="link soft" data-act="close" type="button">Batal</button>');
@@ -1255,7 +1256,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
       if(!k){fail("Isi kode pemulihan.");return}
       if(sb.length<6){fail("Sandi baru minimal 6 karakter.");return}
       var b=$("lupago");b.disabled=true;fail("");
-      rpc("reset_sandi_pakai_kode",{p_username:u,p_kode:k.replace(/[^A-Za-z0-9]/g,""),p_sandi_baru:sb},null).then(function(r){
+      rpc("reset_sandi_pakai_kode",{p_username:u,p_kode:k.replace(/[^A-Za-z0-9]/g,"").toUpperCase(),p_sandi_baru:sb},null).then(function(r){
         b.disabled=false;
         if(r.ok){closeSheet();$("au").value=u;$("ap").value="";toast("Sandi berhasil diganti. Silakan masuk.");return}
         var t=rpcMsg(r);
