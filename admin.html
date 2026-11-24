@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin Kasir Sederhana</title>
+<style>
+:root{--deep:#0a3a2f;--pri:#0a6b57;--gold:#f0b93a;--ink:#14231f;--line:#e2ebe7;--bg:#f2f6f4}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#0a3a2f,#0f5a48);color:#fff;padding:26px 18px 46px}
+header h1{margin:0;font-size:1.2rem}
+header small{opacity:.8}
+main{max-width:520px;margin:-26px auto 40px;padding:0 14px;display:grid;gap:14px}
+.card{background:#fff;border-radius:22px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 30px rgba(15,36,32,.07)}
+.card h2{margin:0 0 10px;font-size:1.02rem}
+label{display:block;font-size:13px;margin:12px 0 4px;color:#4b6b62}
+input{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:0 14px;font:inherit;background:#fff;color:var(--ink)}
+input:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 4px rgba(10,107,87,.12)}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px;min-height:48px;padding:0 16px;font-weight:700}
+button:disabled{opacity:.6;cursor:default}
+.btn{width:100%;background:var(--pri);color:#fff;margin-top:14px}
+.ghost{background:#e3f1ec;color:var(--pri)}
+.row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.row>*{flex:1}
+.row>.auto{flex:0 0 auto}
+.muted{color:#6b7f79;font-size:13px;margin:6px 0 0}
+.msg{padding:12px 14px;border-radius:14px;font-size:14px;margin:12px 0 0;display:none}
+.msg.ok{display:block;background:#e6f6ee;color:#0a6b57}
+.msg.bad{display:block;background:#fdecea;color:#b42318}
+.sandi{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.25rem;font-weight:700;letter-spacing:.04em;text-align:center;background:#f3faf6;border:1px dashed var(--pri);border-radius:14px;padding:14px;margin-top:12px;word-break:break-all}
+.list{display:grid;gap:8px;margin-top:10px;max-height:320px;overflow:auto}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff;text-align:left;color:var(--ink);font-weight:600;min-height:0}
+.item small{display:block;font-weight:400;color:#6b7f79;margin-top:2px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Admin Kasir Sederhana</h1>
+  <small>Ganti sandi pengguna yang lupa</small>
+</header>
+
+<main>
+  <section class="card" id="sLogin">
+    <h2>Masuk sebagai admin</h2>
+    <label for="lu">Username admin</label>
+    <input id="lu" autocapitalize="none" autocomplete="username">
+    <label for="lp">Sandi admin</label>
+    <input id="lp" type="password" autocomplete="current-password">
+    <button class="btn" id="bLogin" type="button">Masuk</button>
+    <p class="msg" id="mLogin"></p>
+  </section>
+
+  <section class="card hidden" id="sAdmin">
+    <div class="row" style="margin-top:0">
+      <h2 style="margin:0">Ganti sandi pengguna</h2>
+      <button class="ghost auto" id="bOut" type="button" style="min-height:38px;padding:0 12px">Keluar</button>
+    </div>
+
+    <label for="pu">Username pengguna</label>
+    <input id="pu" autocapitalize="none" placeholder="contoh: budi">
+
+    <label for="ps">Sandi sementara (minimal 6 karakter)</label>
+    <div class="row" style="margin-top:0">
+      <input id="ps" autocomplete="off">
+      <button class="ghost auto" id="bGen" type="button">Acak</button>
+    </div>
+
+    <button class="btn" id="bReset" type="button">Ganti sandi</button>
+    <p class="msg" id="mReset"></p>
+
+    <div id="hasil" class="hidden">
+      <div class="sandi" id="tSandi"></div>
+      <div class="row">
+        <button class="ghost" id="bSalin" type="button">Salin sandi</button>
+      </div>
+      <p class="muted">Kirim sandi ini ke pengguna lewat chat pribadi. Minta pengguna langsung mengganti sandinya di tab Saya.</p>
+    </div>
+  </section>
+
+  <section class="card hidden" id="sList">
+    <div class="row" style="margin-top:0">
+      <h2 style="margin:0">Daftar pengguna</h2>
+    </div>
+    <p class="muted">Ketuk nama untuk mengisi username otomatis.</p>
+    <div class="list" id="lstBox"></div>
+    <button class="ghost" id="bMuat" type="button" style="width:100%;margin-top:12px">Muat ulang daftar</button>
+  </section>
+</main>
+
+<script>
+var U="https://fftjqyjjobcgntfncirf.supabase.co",
+    K="sb_publishable_tTUISOM4T5qkfvdw6bhXBA_KP8h-p16",
+    MD="@gmail.com",
+    SK="kasir-admin-sesi";
+
+function $(i){return document.getElementById(i)}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function msg(id,t,ok){var m=$(id);m.textContent=t||"";m.className="msg"+(t?(ok?" ok":" bad"):"")}
+function ses(){try{return JSON.parse(localStorage.getItem(SK)||"null")}catch(e){return null}}
+function put(x){try{if(x)localStorage.setItem(SK,JSON.stringify(x));else localStorage.removeItem(SK)}catch(e){}}
+function emailDari(u){return "kasir-"+u.toLowerCase().trim()+MD}
+
+function post(path,body,tok){
+  return fetch(U+path,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","apikey":K,"Authorization":"Bearer "+(tok||K)},
+    body:JSON.stringify(body||{})
+  }).then(function(r){
+    return r.text().then(function(t){
+      var j={};try{j=t?JSON.parse(t):{}}catch(e){j={message:t}}
+      return {ok:r.ok,st:r.status,j:j};
+    });
+  });
+}
+function pesan(r){
+  var j=r.j||{};
+  return j.message||j.msg||j.error_description||j.error||("Gagal (kode "+r.st+")");
+}
+
+function tampilList(rows){
+  var isi=(rows||[]).filter(function(x){return x.username});
+  $("lstBox").innerHTML=isi.length
+    ? isi.map(function(x){
+        return '<button class="item" type="button" data-u="'+esc(x.username)+'"><span>'+esc(x.username)+'<small>WA: '+esc(x.wa||"-")+'</small></span><span class="muted">Pilih</span></button>';
+      }).join("")
+    : '<p class="muted">Belum ada pengguna.</p>';
+}
+
+function sudahMasuk(){
+  $("sLogin").classList.add("hidden");
+  $("sAdmin").classList.remove("hidden");
+  $("sList").classList.remove("hidden");
+}
+function keluarPaksa(pesanText){
+  put(null);
+  $("sAdmin").classList.add("hidden");
+  $("sList").classList.add("hidden");
+  $("sLogin").classList.remove("hidden");
+  msg("mLogin",pesanText,false);
+}
+
+// Cek apakah sesi yang tersimpan adalah admin, lalu ambil daftar pengguna
+function masuk(){
+  var s=ses();if(!s)return;
+  post("/rest/v1/rpc/admin_daftar_pengguna",{},s.at).then(function(r){
+    if(r.st===401){keluarPaksa("Sesi habis. Masuk lagi.");return}
+    if(!r.ok){
+      var p=pesan(r);
+      keluarPaksa(/admin/i.test(p)?"Akun ini bukan admin.":"Gagal memeriksa akses: "+p);
+      return;
+    }
+    sudahMasuk();
+    tampilList(r.j);
+  }).catch(function(){msg("mLogin","Tidak ada internet. Coba lagi.",false)});
+}
+
+$("bLogin").addEventListener("click",function(){
+  var u=$("lu").value.trim(),p=$("lp").value;
+  if(!u||!p){msg("mLogin","Isi username dan sandi.",false);return}
+  $("bLogin").disabled=true;msg("mLogin","Memeriksa...",true);
+  post("/auth/v1/token?grant_type=password",{email:emailDari(u),password:p}).then(function(r){
+    $("bLogin").disabled=false;
+    if(!r.ok||!r.j.access_token){msg("mLogin","Username atau sandi salah.",false);return}
+    put({at:r.j.access_token,rt:r.j.refresh_token||"",exp:Date.now()/1000+(r.j.expires_in||3600)});
+    $("lp").value="";
+    msg("mLogin","",true);
+    masuk();
+  }).catch(function(){$("bLogin").disabled=false;msg("mLogin","Tidak ada internet. Coba lagi.",false)});
+});
+
+$("bOut").addEventListener("click",function(){put(null);location.reload()});
+$("bMuat").addEventListener("click",function(){masuk()});
+
+$("lstBox").addEventListener("click",function(e){
+  var b=e.target.closest?e.target.closest("[data-u]"):null;
+  if(!b)return;
+  $("pu").value=b.getAttribute("data-u");
+  $("ps").focus();
+});
+
+$("bGen").addEventListener("click",function(){
+  var c="abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789",t="",v=new Uint32Array(10);
+  crypto.getRandomValues(v);
+  for(var i=0;i<10;i++)t+=c[v[i]%c.length];
+  $("ps").value=t;
+});
+
+$("bReset").addEventListener("click",function(){
+  var s=ses();if(!s){keluarPaksa("Masuk dulu.");return}
+  var u=$("pu").value.trim(),p=$("ps").value;
+  if(!u){msg("mReset","Isi username pengguna.",false);return}
+  if(p.length<6){msg("mReset","Sandi sementara minimal 6 karakter.",false);return}
+  if(!confirm("Ganti sandi untuk "+u+"? Sandi lama tidak bisa dipakai lagi."))return;
+  $("bReset").disabled=true;
+  post("/rest/v1/rpc/admin_reset_sandi",{p_username:u,p_sandi:p},s.at).then(function(r){
+    $("bReset").disabled=false;
+    if(r.st===401){keluarPaksa("Sesi habis. Masuk lagi.");return}
+    if(!r.ok){msg("mReset",pesan(r),false);$("hasil").classList.add("hidden");return}
+    msg("mReset",u+" berhasil diganti sandinya.",true);
+    $("tSandi").textContent=p;
+    $("hasil").classList.remove("hidden");
+  }).catch(function(){$("bReset").disabled=false;msg("mReset","Tidak ada internet. Coba lagi.",false)});
+});
+
+$("bSalin").addEventListener("click",function(){
+  var t=$("tSandi").textContent;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){msg("mReset","Sandi sudah disalin.",true)},function(){msg("mReset","Gagal menyalin. Salin manual dari kotak di atas.",false)});
+  }else{
+    msg("mReset","Salin manual dari kotak di atas.",false);
+  }
+});
+
+if(ses())masuk();
+</script>
+</body>
+</html>
