@@ -1094,10 +1094,12 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
     if(Date.now()-t>7*D&&Date.now()-n>D){localStorage.setItem("kasir-remind",String(Date.now()));toast(t?"Sudah lebih dari 7 hari belum simpan cadangan. Buka tab Produk, lalu Simpan cadangan.":"Data belum pernah dicadangkan. Buka tab Produk, lalu Simpan cadangan.")}
   }catch(e){}},2500);
   load();render();
+  window.__ui={sheet:sheet,closeSheet:closeSheet,toast:toast,esc:esc};
 })();
 </script>
 
 <script>
+var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.toast,esc=window.__ui.esc;
 (function(){
   var U="https://fftjqyjjobcgntfncirf.supabase.co",K="sb_publishable_tTUISOM4T5qkfvdw6bhXBA_KP8h-p16",MD="@gmail.com",SK="kasir-auth";
   var $=function(i){return document.getElementById(i)};
