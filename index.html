@@ -74,7 +74,6 @@ h2{margin:0;font-family:"Sora",system-ui,sans-serif;font-size:1.05rem;font-weigh
 /* Produk */
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media (min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media (min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
 .tile{position:relative;text-align:left;background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:16px;padding:12px;min-height:116px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .tile:hover{border-color:#bcd3cb}
 .tile.sel{border-color:var(--pri);background:#f4faf7}
@@ -311,6 +310,11 @@ body.guest .gbar{display:flex}
 #lock{z-index:55}
 .acard{position:relative}
 #aclose{position:absolute;top:8px;right:10px;background:transparent;color:var(--mute);min-height:40px;width:40px;padding:0;font-size:1.6rem;line-height:1}
+@media (min-width:900px){
+  main,.top-in{max-width:960px}
+  .tabs{max-width:960px;background:#fff;border-radius:16px 16px 0 0}
+  .cartbar{max-width:936px}
+}
 </style>
 </head>
 <body data-tab="kasir">
