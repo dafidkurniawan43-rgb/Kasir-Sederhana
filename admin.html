@@ -80,6 +80,14 @@ button:disabled{opacity:.6;cursor:default}
     </div>
   </section>
 
+  <section class="card hidden" id="sPengajuan">
+    <h2>Pengajuan atasan</h2>
+    <p class="muted">Lihat bukti dulu sebelum menyetujui. Toko dibuat setelah disetujui.</p>
+    <div class="list" id="pengBox"></div>
+    <button class="ghost" id="bMuatPeng" type="button" style="width:100%;margin-top:12px">Muat ulang pengajuan</button>
+    <p class="msg" id="mPeng"></p>
+  </section>
+
   <section class="card hidden" id="sList">
     <div class="row" style="margin-top:0">
       <h2 style="margin:0">Daftar pengguna</h2>
@@ -120,6 +128,60 @@ function pesan(r){
   return j.message||j.msg||j.error_description||j.error||("Gagal (kode "+r.st+")");
 }
 
+function tampilPengajuan(rows){
+  var isi=rows||[];
+  $("pengBox").innerHTML=isi.length
+    ? isi.map(function(x){
+        return '<div class="item" style="display:block"><div style="font-weight:700">'+esc(x.nama_toko||"-")+'</div>'
+          +'<small class="muted" style="display:block">Username: '+esc(x.username||"-")+' · WA: '+esc(x.wa||"-")+'</small>'
+          +'<small class="muted" style="display:block">Diajukan: '+esc(String(x.dibuat||"").slice(0,16).replace("T"," "))+'</small>'
+          +'<div class="row" style="margin-top:8px">'
+          +'<button class="ghost" type="button" data-bukti="'+esc(x.bukti_path)+'">Lihat bukti</button>'
+          +'<button class="btn" style="margin-top:0" type="button" data-setuju="'+esc(x.user_id)+'">Setujui</button>'
+          +'<button class="ghost" type="button" data-tolak="'+esc(x.user_id)+'" style="color:#b42318">Tolak</button>'
+          +'</div></div>';
+      }).join("")
+    : '<p class="muted">Tidak ada pengajuan yang menunggu.</p>';
+}
+function muatPengajuan(){
+  var s=ses();if(!s)return;
+  post("/rest/v1/rpc/admin_daftar_pengajuan",{},s.at).then(function(r){
+    if(r.st===401){keluarPaksa("Sesi habis. Masuk lagi.");return}
+    if(!r.ok){msg("mPeng",pesan(r),false);return}
+    tampilPengajuan(r.j);
+  }).catch(function(){msg("mPeng","Tidak ada internet. Coba lagi.",false)});
+}
+$("bMuatPeng").addEventListener("click",muatPengajuan);
+$("pengBox").addEventListener("click",function(e){
+  var s=ses();if(!s)return;
+  var b=e.target.closest?e.target.closest("button"):null;if(!b)return;
+  if(b.hasAttribute("data-bukti")){
+    var path=b.getAttribute("data-bukti");
+    post("/storage/v1/object/sign/bukti-atasan/"+path,{expiresIn:600},s.at).then(function(r){
+      if(!r.ok||!r.j.signedURL){msg("mPeng","Bukti tidak bisa dibuka: "+pesan(r),false);return}
+      window.open(U+"/storage/v1"+r.j.signedURL,"_blank","noopener");
+    }).catch(function(){msg("mPeng","Tidak ada internet.",false)});
+    return;
+  }
+  if(b.hasAttribute("data-setuju")){
+    if(!confirm("Setujui pengajuan ini dan buat tokonya?"))return;
+    post("/rest/v1/rpc/admin_setujui",{p_user:b.getAttribute("data-setuju")},s.at).then(function(r){
+      if(!r.ok){msg("mPeng",pesan(r),false);return}
+      msg("mPeng",typeof r.j==="string"?r.j:"Pengajuan disetujui.",true);
+      muatPengajuan();
+    }).catch(function(){msg("mPeng","Tidak ada internet.",false)});
+    return;
+  }
+  if(b.hasAttribute("data-tolak")){
+    if(!confirm("Tolak pengajuan ini?"))return;
+    post("/rest/v1/rpc/admin_tolak",{p_user:b.getAttribute("data-tolak")},s.at).then(function(r){
+      if(!r.ok){msg("mPeng",pesan(r),false);return}
+      msg("mPeng","Pengajuan ditolak.",true);
+      muatPengajuan();
+    }).catch(function(){msg("mPeng","Tidak ada internet.",false)});
+  }
+});
+
 function tampilList(rows){
   var isi=(rows||[]).filter(function(x){return x.username});
   $("lstBox").innerHTML=isi.length
@@ -133,6 +195,8 @@ function sudahMasuk(){
   $("sLogin").classList.add("hidden");
   $("sAdmin").classList.remove("hidden");
   $("sList").classList.remove("hidden");
+  $("sPengajuan").classList.remove("hidden");
+  muatPengajuan();
 }
 function keluarPaksa(pesanText){
   put(null);

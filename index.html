@@ -365,6 +365,8 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
 .ghost{border-radius:14px;font-weight:600}
 .abtn,.pay,.wgo{letter-spacing:.01em}
 #rng button,.chips button{transition:background-color .2s ease,color .2s ease,transform .12s ease}
+body.karyawan .tabs{grid-template-columns:repeat(2,1fr)}
+body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-tab="laporan"],body.karyawan #linkbtn,body.karyawan #staddbtn,body.karyawan #invbtn{display:none}
 </style>
 </head>
 <body data-tab="kasir">
@@ -480,7 +482,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
       <div class="head"><h2>Akun</h2></div>
       <p class="muted" id="acct"></p>
       <p class="muted" id="syncmsg" style="margin:8px 0 0"></p>
-      <button class="ghost" id="linkbtn" type="button" style="width:100%;margin-top:8px">Hubungkan toko online</button>
+      <button class="ghost" id="linkbtn" type="button" style="width:100%;margin-top:8px">Cek status toko online</button>
       <div id="migbox" hidden><p class="muted">Ada data lama di HP ini (produk, transaksi, nama toko) yang dibuat sebelum ada akun.</p><button class="ghost" id="mig" type="button" style="width:100%;margin-bottom:8px">Pindahkan data lama ke akun ini</button></div>
       <button class="ghost" id="kodebtn" type="button" style="width:100%;margin-bottom:8px">Buat kode pemulihan</button>
       <button class="ghost" id="logout" type="button" style="width:100%">Keluar dari akun</button>
@@ -535,11 +537,13 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
     <h2 id="at">Selamat datang kembali</h2>
     <p class="sub" id="as">Masuk ke akun Kasir Sederhana kamu.</p>
     <div class="aseg"><button type="button" id="tl" class="on">Masuk</button><button type="button" id="tr">Daftar</button></div>
+    <div class="aseg rolseg" id="rolseg"><button type="button" id="rA" class="on">Atasan (pemilik)</button><button type="button" id="rK">Karyawan</button></div>
+    <p class="hint" id="rolhint" style="margin:6px 0 0"></p>
     <form id="aform" autocomplete="on" novalidate>
       <label for="au">Username</label>
       <input id="au" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="25" placeholder="contoh: warungbudi">
       <p class="hint reg" hidden>4-25 karakter: huruf, angka, dan underscore (_). Tanpa spasi.</p>
-      <div class="reg" hidden><label for="ash">Nama toko</label>
+      <div class="reg" id="wrapToko" hidden><label for="ash">Nama toko</label>
       <input id="ash" name="organization" autocomplete="organization" maxlength="30" placeholder="contoh: Warung Budi">
       <p class="hint">Tampil di header dan struk. Bisa diubah nanti.</p></div>
       <div class="reg" hidden><label for="aw">Nomor WhatsApp</label>
@@ -548,6 +552,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
       <input id="ap" name="password" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter">
       <button type="button" class="link" id="lupa" style="display:block;margin:6px 0 0;font-size:14px">Lupa sandi?</button>
       <a class="link" href="https://wa.me/6285604922631?text=Halo%20admin%2C%20saya%20lupa%20sandi%20akun%20Kasir%20Sederhana.%20Username%20saya%3A%20" target="_blank" rel="noopener" style="display:block;margin:6px 0 0;font-size:14px;color:#0a6b57">Lupa sandi atau kode pemulihan? Hubungi admin lewat WhatsApp</a>
+      <div class="reg" id="wrapBukti" hidden><label for="abukti">Bukti kepemilikan toko</label>
+      <input id="abukti" type="file" accept="image/*,application/pdf" style="padding:10px 0">
+      <p class="hint">Kirim foto tempat usahamu yang terlihat nama tokonya, misalnya papan nama, spanduk, atau etalase. Jangan kirim KTP atau data pribadi lain. Hanya admin yang bisa melihatnya. Maksimal 5 MB.</p></div>
       <div class="reg" hidden><label for="ap2">Ulangi sandi</label>
       <input id="ap2" name="password2" type="password" autocomplete="new-password" placeholder="Ketik sandi lagi"></div>
       <div class="aerr" id="aerr" hidden></div>
@@ -678,8 +685,17 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
     var s=sbSes();if(!s||!s.at||!s.id)return Promise.resolve();
     setSync("Menghubungkan ke toko online...");
     return myLink().then(function(a){
-      if(!a){CL.ready=false;setSync("Belum terhubung ke toko online. Pemilik tekan Hubungkan toko online.");return}
-      CL.toko=a.toko_id;CL.peran=a.peran;
+      var pilih=localStorage.getItem("kasir-role-pilih")||"";
+      if(!a){CL.ready=false;
+        return rest("rpc/status_pengajuan_saya",{method:"POST",body:{}}).catch(function(){return null}).then(function(st){
+          setSync(st==="menunggu"?"Pengajuan atasan kamu sedang diperiksa admin. Tunggu persetujuan.":st==="ditolak"?"Pengajuan atasan ditolak admin. Hubungi admin lewat WhatsApp.":pilih==="karyawan"?"Akun kamu belum diundang atasan. Minta atasan menambahkan username kamu di tab Saya.":"Belum terhubung ke toko online.");
+        });
+      }
+      if((pilih==="atasan"&&a.peran!=="pemilik")||(pilih==="karyawan"&&a.peran==="pemilik")){
+        alert("Akun ini terdaftar sebagai "+(a.peran==="pemilik"?"atasan":"karyawan")+". Pilih peran yang sesuai saat masuk.");
+        window.__sbc.put(null);localStorage.removeItem("kasir-role-pilih");location.reload();return;
+      }
+      CL.toko=a.toko_id;CL.peran=a.peran;document.body.classList.toggle("karyawan",a.peran==="karyawan");
       return rest("data_toko?select=jenis,client_id,isi&toko_id=eq."+a.toko_id+"&limit=10000").then(function(rows){
         if(rows.length)applyRemote(rows);
         CL.ready=true;
@@ -713,7 +729,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
     if(ids.length)q+="&client_id=not.in."+encodeURIComponent("("+ids.map(function(x){return '"'+String(x).replace(/"/g,"")+'"'}).join(",")+")");
     return rest("data_toko?"+q,{method:"DELETE"});
   }
-  function inviteSheet(){sheet('<h2>Undang karyawan online</h2><p class="muted" style="margin:0">Karyawan harus daftar akun dulu di aplikasi ini, lalu pakai email yang sama di sini.</p><input id="ie" type="email" placeholder="Email karyawan" autocomplete="off"><input id="in2" maxlength="30" placeholder="Nama karyawan" autocomplete="off"><button class="pay" data-act="invite" type="button">Undang</button><button class="link soft" data-act="close" type="button">Batal</button>')}
+  function inviteSheet(){sheet('<h2>Undang karyawan online</h2><p class="muted" style="margin:0">Karyawan harus daftar dulu di aplikasi ini (pilih Karyawan), lalu masukkan username-nya di sini.</p><input id="ie" placeholder="Username karyawan (contoh: budi)" autocomplete="off" autocapitalize="none"><input id="in2" maxlength="30" placeholder="Nama karyawan" autocomplete="off"><button class="pay" data-act="invite" type="button">Undang</button><button class="link soft" data-act="close" type="button">Batal</button>')}
   function renderStaff(){
     $("whobtn").textContent="Kasir: "+whoName()+" · Ganti";
     $("stlist").innerHTML=staff.length?staff.map(function(k){return '<div class="rowx"><div><b>'+esc(k.n)+'</b><small>'+(who===k.id?'Sedang bertugas':'Karyawan')+'</small></div><button class="ghost" data-stdel="'+k.id+'" style="min-height:40px">Hapus</button></div>'}).join(''):'<p class="muted" style="margin:0">Belum ada karyawan.</p>';
@@ -906,7 +922,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
   setTimeout(function(){if(sbSes())syncIn()},0);
   $("linkbtn").addEventListener("click",function(){
     var s=sbSes();if(!s)return;
-    rpc("buat_toko",{nama_toko:s.sh||"Toko saya"}).catch(function(){}).then(function(){return syncIn()}).then(function(){toast("Toko online tersambung")});
+    syncIn().then(function(){toast("Status diperbarui")});
   });
   $("stlist").addEventListener("click",function(e){var b=e.target.closest("[data-stdel]");if(!b)return;var id=+b.getAttribute("data-stdel");var k=staff.filter(function(x){return x.id===id})[0];if(!k)return;askPin(function(){if(confirm("Hapus karyawan "+k.n+"?")){staff=staff.filter(function(x){return x.id!==id});if(who===id){who=0;unlocked=false}save();render();toast("Karyawan dihapus")}})});
   $("sheet").addEventListener("input",function(e){if(e.target.classList.contains("num"))e.target.value=fmt(num(e.target.value))});
@@ -917,7 +933,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
     else if(a==="bt")printBT(curTx);
     else if(a==="pr")printRcpt();
     else if(a==="void"){askPin(function(){if(confirm("Batalkan transaksi ini? Stok dan uang laci akan dikoreksi."))voidTrx(curTx)})}
-    else if(a==="invite"){var ie=$("ie").value.trim(),in2=$("in2").value.trim();if(!ie){toast("Isi email karyawan");return}rpc("tambah_karyawan",{email_karyawan:ie,nama_karyawan:in2}).then(function(){closeSheet();toast("Karyawan diundang");syncIn()}).catch(function(e){toast(e.message)})}
+    else if(a==="invite"){var ie=$("ie").value.trim(),in2=$("in2").value.trim();if(!ie){toast("Isi email karyawan");return}rpc("tambah_karyawan",{email_karyawan:"kasir-"+ie.toLowerCase()+"@gmail.com",nama_karyawan:in2}).then(function(){closeSheet();toast("Karyawan diundang");syncIn()}).catch(function(e){toast(e.message)})}
     else if(a==="stadd"){var sn=$("stn").value.trim().replace(/\s+/g," "),sp=$("stp").value;if(sn.length<2){toast("Nama karyawan minimal 2 huruf");return}if(!/^\d{4,6}$/.test(sp)){toast("PIN karyawan harus 4 sampai 6 angka");return}staff.push({id:Date.now(),n:sn,p:hp(sp)});save();render();closeSheet();toast("Karyawan "+sn+" ditambahkan")}
     else if(a==="wsw"){var wid=+b.getAttribute("data-id");if(wid===0){askPin(function(){who=0;unlocked=true;save();render();closeSheet();toast("Kasir: Pemilik")});return}}
     else if(a==="wpick"){var pid=+b.getAttribute("data-id"),pk=staff.filter(function(x){return x.id===pid})[0];if(!pk)return;sheet('<h2>PIN '+esc(pk.n)+'</h2><input id="wp" type="password" inputmode="numeric" maxlength="6" placeholder="PIN karyawan" autocomplete="off"><button class="pay" data-act="wpin" data-id="'+pid+'" type="button">Mulai jualan</button><button class="link soft" data-act="close" type="button">Batal</button>');setTimeout(function(){$("wp").focus()},60)}
@@ -1113,7 +1129,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   var mode="login",busy=false;
   function ses(){try{return JSON.parse(localStorage.getItem(SK)||"null")}catch(e){return null}}
   function put(x){try{if(x)localStorage.setItem(SK,JSON.stringify(x));else localStorage.removeItem(SK)}catch(e){}}
-  window.__sbc={U:U,K:K,ses:ses};
+  window.__sbc={U:U,K:K,ses:ses,put:put};
   function em(u){return "kasir-"+u.toLowerCase()+MD}
   function api(path,body,tok){
     var h={"Content-Type":"application/json","apikey":K};if(tok)h["Authorization"]="Bearer "+tok;
@@ -1138,6 +1154,24 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
     });
   }
   function err(t){var e=$("aerr");e.textContent=t||"";e.hidden=!t}
+  var role="atasan";
+  function applyRole(){
+    var reg=mode==="reg";
+    $("wrapToko").hidden=!(reg&&role==="atasan");
+    $("wrapBukti").hidden=!(reg&&role==="atasan");
+    $("rA").classList.toggle("on",role==="atasan");
+    $("rK").classList.toggle("on",role==="karyawan");
+    $("rolhint").textContent=role==="atasan"?"Pilih ini kalau kamu pemilik toko.":"Pilih ini kalau kamu bekerja di toko. Minta atasan mengundang username kamu.";
+  }
+  function setRole(r){role=r;applyRole()}
+  function uploadBukti(tok,uid,file){
+    var ext=((file.name||"").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+    var path=uid+"/bukti."+ext;
+    return fetch(U+"/storage/v1/object/bukti-atasan/"+path,{method:"POST",headers:{"apikey":K,"Authorization":"Bearer "+tok,"Content-Type":file.type||"application/octet-stream","x-upsert":"true"},body:file}).then(function(r){
+      if(!r.ok)throw new Error("unggah bukti gagal (kode "+r.status+")");
+      return path;
+    });
+  }
   function setMode(m){
     mode=m;var reg=m==="reg";
     $("tl").classList.toggle("on",!reg);$("tr").classList.toggle("on",reg);
@@ -1147,6 +1181,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
     $("asub").textContent=reg?"Daftar akun":"Masuk";
     $("ap").setAttribute("autocomplete",reg?"new-password":"current-password");
     $("lupa").hidden=reg;
+    applyRole();
     err("");
   }
   $("tl").addEventListener("click",function(){setMode("login")});
@@ -1161,6 +1196,8 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
     if(r.st===429||/rate limit/i.test(c+m))return "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.";
     return "Gagal ("+r.st+(c?", "+c:"")+"). "+m;
   }
+  $("rA").addEventListener("click",function(){setRole("atasan")});
+  $("rK").addEventListener("click",function(){setRole("karyawan")});
   $("aform").addEventListener("submit",function(e){
     e.preventDefault();if(busy)return;err("");
     var u=$("au").value.trim(),p=$("ap").value,reg=mode==="reg";
@@ -1168,7 +1205,9 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
     if(p.length<6){err("Sandi minimal 6 karakter.");return}
     var w="",sh="";
     if(reg){
-      sh=$("ash").value.trim().replace(/\s+/g," ");if(sh.length<2){err("Nama toko wajib diisi (minimal 2 huruf).");return}
+      if(role==="atasan"){sh=$("ash").value.trim().replace(/\s+/g," ");if(sh.length<2){err("Nama toko wajib diisi (minimal 2 huruf).");return}
+        var fb=$("abukti").files[0];if(!fb){err("Kirim bukti kepemilikan toko dulu.");return}
+        if(fb.size>5*1024*1024){err("Bukti terlalu besar. Maksimal 5 MB.");return}}
       w=$("aw").value.replace(/\D/g,"");if(w.charAt(0)==="0")w="62"+w.slice(1);else if(w.charAt(0)==="8")w="62"+w;
       if(!/^62\d{9,13}$/.test(w)){err("Nomor WhatsApp tidak valid. Contoh: 08123456789");return}
       if(p!==$("ap2").value){err("Ulangi sandi tidak sama.");return}
@@ -1179,7 +1218,14 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
       busy=false;$("asub").disabled=false;$("asub").textContent=old;
       if(r.ok&&r.j&&r.j.access_token){
         var n=toSes(r.j);if(!n.u)n.u=u;if(!n.wa&&w)n.wa=w;if(!n.sh&&sh)n.sh=sh;put(n);try{if(n.sh&&!localStorage.getItem("kasir-warung"))localStorage.setItem("kasir-warung",n.sh)}catch(e){}
-        $("ap").value="";$("ap2").value="";$("ash").value="";if(reg){simpanKode(n.at,function(kode,msg){if(kode)showKodeBox(kode,function(){location.reload()});else{toast(msg);location.reload()}})}else location.reload();
+        try{localStorage.setItem("kasir-role-pilih",role)}catch(e){}
+        $("ap").value="";$("ap2").value="";$("ash").value="";
+        var fileBukti=(reg&&role==="atasan")?$("abukti")&&$("abukti").files[0]:null;
+        var kirim=(reg&&role==="atasan")
+          ?uploadBukti(n.at,n.id,fileBukti).then(function(path){return rpc("ajukan_atasan",{p_nama_toko:sh||n.u,p_wa:w,p_bukti:path},n.at)}).then(function(r){if(!r.ok)throw new Error(why(r))})
+          :Promise.resolve();
+        kirim.then(function(){if(reg){simpanKode(n.at,function(kode,msg){if(kode)showKodeBox(kode,function(){location.reload()});else{toast(msg);location.reload()}})}else location.reload()})
+          .catch(function(e){err("Akun dibuat, tapi bukti belum terkirim: "+(e&&e.message||"")+". Masuk lagi nanti untuk mengirim ulang.")});
       }else if(r.ok&&reg){
         err("Akun dibuat, tapi verifikasi email di Supabase masih aktif. Matikan 'Confirm email' lalu coba Masuk.");
       }else err(why(r));
