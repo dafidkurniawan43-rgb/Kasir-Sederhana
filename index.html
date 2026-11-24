@@ -693,7 +693,7 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
       var pilih=localStorage.getItem("kasir-role-pilih")||"";
       if(!a){CL.ready=false;
         return rest("rpc/status_pengajuan_saya",{method:"POST",body:{}}).catch(function(){return null}).then(function(st){
-          var kb=$("kirimbuktiBox");if(kb)kb.hidden=!(pilih==="atasan"&&!st);
+          var kb=$("kirimbuktiBox");if(kb)kb.hidden=!(pilih==="atasan"&&(!st||st==="ditolak"));
           setSync(st==="menunggu"?"Pengajuan atasan kamu sedang diperiksa admin. Tunggu persetujuan.":st==="ditolak"?"Pengajuan atasan ditolak admin. Hubungi admin lewat WhatsApp.":pilih==="karyawan"?"Akun kamu belum diundang atasan. Minta atasan menambahkan username kamu di tab Saya.":"Belum terhubung ke toko online.");
         });
       }
