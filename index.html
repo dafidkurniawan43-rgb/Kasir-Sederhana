@@ -133,7 +133,7 @@ h2{margin:0;font-family:"Sora",system-ui,sans-serif;font-size:1.05rem;font-weigh
 .cartbar button{background:var(--gold);color:var(--deep);min-height:44px;padding:0 18px}
 
 /* Tab bawah */
-.tabs{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:720px;bottom:0;z-index:5;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:720px;bottom:0;z-index:5;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs button{background:transparent;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.76rem;min-height:56px;border-radius:12px}
 .tabs button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .tabs button[aria-selected="true"]{color:var(--pri)}
@@ -392,12 +392,10 @@ body.guest .gbar{display:flex}
         <div class="r2"><button id="padd" type="button">Tambah produk</button><button id="pcx" class="ghost" type="button" hidden>Batal</button></div>
       </div>
     </section>
-    <section>
-      <div class="head"><h2>Cadangan data</h2></div>
-      <p class="muted">Simpan semua data ke file supaya aman kalau ganti HP atau data browser terhapus.</p>
-      <div class="r2"><button class="ghost" id="bk" type="button">Simpan cadangan</button><button class="ghost" id="rsb" type="button">Pulihkan</button></div>
-      <input type="file" id="rf" accept="application/json,.json" hidden>
-    </section>
+  </div>
+
+  <!-- ===== Layar: Saya (pengaturan akun) ===== -->
+  <div class="screen" id="s-akun">
     <section>
       <div class="head"><h2>Profil</h2></div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><span id="pfav" style="width:48px;height:48px;border-radius:50%;background:#f0b93a;color:#0a3a2f;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px">?</span><div><b id="pfname">-</b><div class="muted" id="pfuser"></div></div></div>
@@ -415,13 +413,18 @@ body.guest .gbar{display:flex}
       <button class="ghost" id="logout" type="button" style="width:100%">Keluar dari akun</button>
     </section>
     <section>
+      <div class="head"><h2>Cadangan data</h2></div>
+      <p class="muted">Simpan semua data ke file supaya aman kalau ganti HP atau data browser terhapus.</p>
+      <div class="r2"><button class="ghost" id="bk" type="button">Simpan cadangan</button><button class="ghost" id="rsb" type="button">Pulihkan</button></div>
+      <input type="file" id="rf" accept="application/json,.json" hidden>
+    </section>
+    <section>
       <div class="head"><h2>PIN pemilik</h2></div>
       <p class="muted" id="pinst"></p>
       <div class="r2"><button class="ghost" id="pinset" type="button">Atur PIN</button><button class="ghost" id="pinlock" type="button">Kunci sekarang</button></div>
     </section>
   </div>
 
-  <!-- ===== Layar 3: Laporan ===== -->
   <div class="screen" id="s-laporan">
     <div class="seg" id="seg"><button class="on" data-p="rs">Ringkasan</button><button data-p="rw">Riwayat</button><button data-p="ut">Utang</button></div>
     <div id="p-rs">
@@ -448,6 +451,7 @@ body.guest .gbar{display:flex}
   <button role="tab" aria-selected="true" data-tab="kasir"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>Kasir</button>
   <button role="tab" aria-selected="false" data-tab="produk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>Produk</button>
   <button role="tab" aria-selected="false" data-tab="laporan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Laporan</button>
+  <button role="tab" aria-selected="false" data-tab="akun"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Saya</button>
 </nav>
 
 <div id="auth" hidden>
@@ -541,7 +545,7 @@ body.guest .gbar{display:flex}
   /* Navigasi tab */
   document.querySelectorAll(".tabs button").forEach(function(b){
     b.addEventListener("click",function(){
-      var t=b.getAttribute("data-tab");if(t!=="kasir"&&pin&&!unlocked){askPin(function(){b.click()});return}
+      var t=b.getAttribute("data-tab");if(t!=="kasir"&&t!=="akun"&&pin&&!unlocked){askPin(function(){b.click()});return}
       document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-selected",x===b?"true":"false")});
       document.querySelectorAll(".screen").forEach(function(s){s.classList.toggle("on",s.id==="s-"+t)});
       cur=t;document.body.setAttribute("data-tab",t);window.scrollTo({top:0});render();
