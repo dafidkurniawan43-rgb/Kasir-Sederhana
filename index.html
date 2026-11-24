@@ -316,17 +316,52 @@ body.guest .gbar{display:flex}
   .cartbar{max-width:936px}
 }
 #rcpt{display:none}
+@page{size:58mm 200mm;margin:0}
 @media print{
-  body *{visibility:hidden}
-  #rcpt,#rcpt *{visibility:visible}
-  #rcpt{display:block;position:absolute;left:0;top:0;width:58mm;padding:3mm 2mm;font:11px/1.4 "Courier New",monospace;color:#000;background:#fff}
+  body>*:not(#rcpt){display:none !important}
+  #rcpt{display:block;position:absolute;left:0;top:0;width:58mm;padding:2mm;font:12px/1.4 "Courier New",monospace;color:#000;background:#fff}
   #rcpt .c{text-align:center}
   #rcpt .b{font-weight:700}
-  #rcpt .big{font-size:14px}
+  #rcpt .big{font-size:15px}
   #rcpt .ri{display:flex;justify-content:space-between;gap:4px}
   #rcpt .nm{margin-top:3px;font-weight:600}
   #rcpt .sep{border-top:1px dashed #000;margin:5px 0}
 }
+.wtxt{text-align:left;width:100%}
+.wbrand{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-family:"Sora",system-ui,sans-serif;font-weight:700;color:#f2f8f5;letter-spacing:.01em}
+.wbrand .wl{width:40px;height:40px;border-radius:12px;margin:0;box-shadow:none}
+.wcard h1{font-size:1.7rem;text-align:left}
+.wcard .wtxt>p{margin:0 0 22px;text-align:left}
+.wfeat{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:10px;text-align:left}
+.wfeat li{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;font-size:.92rem;color:#e4f1ec;line-height:1.4}
+.wfeat li b{color:var(--gold)}
+.wsec{width:100%;min-height:50px;margin-top:10px;background:transparent;color:#f2f8f5;border:1px solid rgba(255,255,255,.25);border-radius:16px;font-size:.98rem;font-weight:600}
+.wcard .wtxt>small{text-align:center}
+.wmock{display:none}
+.ph{background:#fff;color:#0a3a2f;border-radius:22px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35);max-width:320px;margin:0 auto}
+.ph-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;font-size:.85rem;color:#4b6b62}
+.ph-h b{font-size:1.1rem;color:#0a3a2f}
+.ph-r{display:flex;justify-content:space-between;font-size:.92rem;padding:9px 0;border-bottom:1px dashed #d6e4df}
+.ph-t{display:flex;justify-content:space-between;font-weight:800;font-size:1.08rem;padding:12px 0 14px}
+.ph-btn{background:var(--gold);color:var(--deep);text-align:center;border-radius:14px;padding:13px;font-weight:700;font-size:.92rem}
+@media (min-width:820px){
+  .wcard{max-width:960px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .wcard h1{font-size:2.3rem}
+  .wmock{display:block}
+}
+/* ---- modern polish ---- */
+section{border-radius:22px;box-shadow:0 1px 2px rgba(15,36,32,.04),0 10px 30px rgba(15,36,32,.06)}
+section .head h2,.head h2{font-family:"Sora",system-ui,sans-serif;font-weight:700;letter-spacing:-.01em}
+button{transition:transform .12s ease,background-color .2s ease,color .2s ease,box-shadow .2s ease,opacity .2s ease}
+button:active:not(:disabled){transform:scale(.97)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 4px rgba(10,107,87,.12)}
+.tabs{background:rgba(255,255,255,.88);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);border-top:1px solid var(--line);box-shadow:0 -8px 28px rgba(15,36,32,.07)}
+.tabs button{transition:color .2s ease,transform .12s ease}
+.tabs button svg{transition:transform .2s ease}
+.tabs button[aria-selected="true"] svg{transform:translateY(-1px)}
+.ghost{border-radius:14px;font-weight:600}
+.abtn,.pay,.wgo{letter-spacing:.01em}
+#rng button,.chips button{transition:background-color .2s ease,color .2s ease,transform .12s ease}
 </style>
 </head>
 <body data-tab="kasir">
@@ -444,6 +479,7 @@ body.guest .gbar{display:flex}
       <section>
         <div class="chips" id="rng"><button class="on" data-r="1">Hari ini</button><button data-r="7">7 hari</button><button data-r="30">30 hari</button></div>
         <div class="stat" id="stat"></div>
+        <button class="ghost" id="rsale" type="button" style="width:100%;margin-top:10px">Reset penjualan hari ini</button>
         <div class="bars" id="bars"></div>
       </section>
       <section><div class="head"><h2>Produk terlaris</h2></div><div id="top"></div></section>
@@ -494,16 +530,29 @@ body.guest .gbar{display:flex}
 </div>
 <div id="welcome" hidden>
   <div class="wcard">
-    <img class="wl" src="icon-192.png" alt="Kasir Sederhana">
-    <h1>Selamat datang di Kasir Sederhana</h1>
-    <p>Catat penjualan, stok, dan uang laci warungmu langsung dari HP. Simpel dan cepat dipakai.</p>
-    <ul>
-      <li>Hitung belanja dan kembalian otomatis</li>
-      <li>Bayar tunai, QRIS, atau catat utang</li>
-      <li>Laporan harian, laba, dan stok menipis</li>
-    </ul>
-    <button class="wgo" id="wgo" type="button">Masuk</button>
-    <small>Login diperlukan untuk memakai semua fitur.</small>
+    <div class="wtxt">
+      <div class="wbrand"><img class="wl" src="icon-192.png" alt=""><span>Kasir Sederhana</span></div>
+      <h1>Kasir warung yang rapi, langsung dari HP.</h1>
+      <p>Catat penjualan, kelola stok, dan pantau laba harian tanpa ribet. Cocok untuk warung, toko kelontong, dan usaha kecil.</p>
+      <ul class="wfeat">
+        <li><b>Hitung otomatis</b> belanja dan kembalian</li>
+        <li><b>Banyak cara bayar</b>: tunai, QRIS, atau catat utang</li>
+        <li><b>Laporan jelas</b>: omzet, laba, dan stok menipis</li>
+        <li><b>Cetak struk</b> lewat printer Bluetooth atau PDF</li>
+      </ul>
+      <button class="wgo" id="wgo" type="button">Masuk ke akun</button>
+      <button class="wsec" id="wreg" type="button">Buat akun baru</button>
+      <small>Login diperlukan untuk memakai semua fitur.</small>
+    </div>
+    <div class="wmock" aria-hidden="true">
+      <div class="ph">
+        <div class="ph-h"><span>Penjualan hari ini</span><b>Rp43.000</b></div>
+        <div class="ph-r"><span>porsi besar × 2</span><b>Rp20.000</b></div>
+        <div class="ph-r"><span>aqua × 1</span><b>Rp1.000</b></div>
+        <div class="ph-t"><span>Total</span><b>Rp21.000</b></div>
+        <div class="ph-btn">Selesaikan pembayaran</div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="modal" id="lock" hidden><div class="box" style="text-align:center">
@@ -694,7 +743,7 @@ body.guest .gbar{display:flex}
   var hm=function(t){return new Date(t).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})};
   var dm=function(t){return new Date(t).toLocaleDateString("id-ID",{day:"numeric",month:"short"})};
   var sod=function(n){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d.getTime()};
-  function dayTotal(){var s=sod(0);return trx.reduce(function(a,x){return a+(x.ts>=s&&!x.v?x.t:0)},0)}
+  function dayTotal(){var s=sod(0);return trx.reduce(function(a,x){return a+(x.ts>=s&&!x.v&&!x.rs?x.t:0)},0)}
   function laciBal(){return laci.start+laci.log.filter(function(e){return e.ts>=laci.ts}).reduce(function(s,e){return s+e.a},0)}
   function lc(a,n){laci.log.push({ts:Date.now(),a:a,n:n});if(laci.log.length>1500)laci.log.splice(0,200)}
   function sheet(h){$("sbox").innerHTML=h;$("sheet").hidden=false}
@@ -731,11 +780,12 @@ body.guest .gbar{display:flex}
   }
   var DAY=["Min","Sen","Sel","Rab","Kam","Jum","Sab"],ks=[];
   function rLap(){
-    var s0=sod(rng-1),L=trx.filter(function(x){return x.ts>=s0&&!x.v});
+    var s0=sod(rng-1),L=trx.filter(function(x){return x.ts>=s0&&!x.v&&!x.rs});
     var om=L.reduce(function(a,x){return a+x.t},0),lb=0,ms=0;L.forEach(function(x){x.it.forEach(function(i){if(i.b==null)ms++;else lb+=(i.p-i.b)*i.q})});
     $("stat").innerHTML='<div><small>Omzet</small><b>'+rp(om)+'</b></div><div><small>Transaksi</small><b>'+L.length+'</b></div><div><small>Laba kotor</small><b>'+rp(lb)+'</b></div><div><small>Rata-rata</small><b>'+rp(L.length?Math.round(om/L.length):0)+'</b></div>'+(ms?'<p class="muted" style="grid-column:1/-1;margin:0">Laba hanya dihitung untuk produk yang sudah diisi harga beli.</p>':'');
     var g=[];for(var i=6;i>=0;i--)g.push({k:sod(i),l:DAY[new Date(sod(i)).getDay()],v:0});
-    trx.forEach(function(x){if(x.v)return;g.forEach(function(d){if(x.ts>=d.k&&x.ts<d.k+864e5)d.v+=x.t})});
+    trx.forEach(function(x){if(x.v||x.rs)return;g.forEach(function(d){if(x.ts>=d.k&&x.ts<d.k+864e5)d.v+=x.t})});
+    $("rsale").hidden=rng!==1;
     var mx=Math.max.apply(null,g.map(function(d){return d.v}).concat(1));
     $("bars").innerHTML=g.map(function(d,i){return '<div class="bar'+(i===6?' t':'')+'"><i style="height:'+Math.round(d.v/mx*80)+'%" title="'+rp(d.v)+'"></i>'+d.l+'</div>'}).join("");
     var m={};L.forEach(function(x){x.it.forEach(function(i){m[i.n]=m[i.n]||{q:0,v:0};m[i.n].q+=i.q;m[i.n].v+=i.q*i.p})});
@@ -796,6 +846,13 @@ body.guest .gbar{display:flex}
   $("seg").addEventListener("click",function(e){var b=e.target.closest("[data-p]");if(!b)return;var p=b.getAttribute("data-p");
     document.querySelectorAll("#seg button").forEach(function(x){x.classList.toggle("on",x===b)});
     ["rs","rw","ut"].forEach(function(k){$("p-"+k).hidden=k!==p})});
+  $("rsale").addEventListener("click",function(){
+    var t0=sod(0),n=trx.filter(function(x){return x.ts>=t0&&!x.v&&!x.rs}).length;
+    if(!n){toast("Belum ada penjualan hari ini");return}
+    if(!confirm("Reset penjualan hari ini? Omzet, laba, dan transaksi hari ini akan mulai dari nol. Riwayat transaksi tetap tersimpan, dan uang di laci tidak berubah.")) return;
+    trx.forEach(function(x){if(x.ts>=t0)x.rs=true});
+    save();render();rLap();toast("Penjualan hari ini direset");
+  });
   $("rng").addEventListener("click",function(e){var b=e.target.closest("[data-r]");if(!b)return;rng=+b.getAttribute("data-r");
     document.querySelectorAll("#rng button").forEach(function(x){x.classList.toggle("on",x===b)});rLap()});
   $("q").addEventListener("input",function(){qs=this.value.trim().toLowerCase();render()});
@@ -1041,6 +1098,7 @@ body.guest .gbar{display:flex}
   document.addEventListener("visibilitychange",function(){if(!document.hidden)refresh()});
   function openAuth(m){setMode(m||"login");$("lock").hidden=true;$("auth").hidden=false;setTimeout(function(){try{$("au").focus()}catch(e){}},60)}
   $("wgo").addEventListener("click",function(){var w=$("welcome");w.classList.add("out");setTimeout(function(){w.hidden=true;w.classList.remove("out")},300)});
+  $("wreg").addEventListener("click",function(){$("welcome").hidden=true;openAuth("reg")});
   $("gbtn").addEventListener("click",function(){openAuth("login")});
   $("gbar-btn").addEventListener("click",function(){openAuth("login")});
   $("lgo").addEventListener("click",function(){openAuth("login")});
