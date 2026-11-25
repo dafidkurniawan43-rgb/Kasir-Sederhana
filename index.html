@@ -366,6 +366,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri);box
 .abtn,.pay,.wgo{letter-spacing:.01em}
 #rng button,.chips button{transition:background-color .2s ease,color .2s ease,transform .12s ease}
 body.karyawan .tabs{grid-template-columns:repeat(2,1fr)}
+body.karyawan .owner-only{display:none!important}
 body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-tab="laporan"],body.karyawan #linkbtn,body.karyawan #staddbtn,body.karyawan #invbtn{display:none}
 body.belum-verif .tabs button[data-tab="laporan"],body.belum-verif .tabs button[data-tab="produk"]{display:none}
 body.belum-verif .tabs{grid-template-columns:repeat(2,1fr)}
@@ -721,7 +722,7 @@ body.selamat-open .tabs{display:none!important}
     setSync("Menghubungkan ke toko online...");
     return cekAkun().then(function(){return myLink()}).then(function(a){
       var pilih=localStorage.getItem("kasir-role-pilih")||"";
-      if(!a){CL.ready=false;setVerif(pilih!=="atasan");
+      if(!a){CL.ready=false;setVerif(pilih!=="atasan");document.body.classList.toggle("karyawan",pilih==="karyawan");
         return rest("rpc/status_pengajuan_saya",{method:"POST",body:{}}).catch(function(){return null}).then(function(st){
           var kb=$("kirimbuktiBox");if(kb)kb.hidden=!(pilih==="atasan"&&(!st||st==="ditolak"));
           var vn=$("verifNote");
@@ -988,6 +989,7 @@ body.selamat-open .tabs{display:none!important}
     uploadBuktiM(f).then(function(path){return rest("rpc/ajukan_atasan",{method:"POST",body:{p_nama_toko:s.sh||s.u,p_wa:s.wa||"",p_bukti:path}})}).then(function(){toast("Bukti terkirim. Tunggu persetujuan admin.");syncIn()}).catch(function(e){toast("Gagal: "+e.message)});
   });
   if(localStorage.getItem("kasir-role-pilih")==="atasan"&&localStorage.getItem("kasir-verif")!=="1")document.body.classList.add("belum-verif");
+  if(localStorage.getItem("kasir-role-pilih")==="karyawan")document.body.classList.add("karyawan");
   document.querySelectorAll("#s-akun section").forEach(function(sec){var h=sec.querySelector("h2");if(h&&/Karyawan|Cadangan|PIN pemilik/.test(h.textContent))sec.classList.add("owner-only")});
   setTimeout(function(){if(sbSes())syncIn()},0);
   setInterval(function(){if(document.body.classList.contains("belum-verif")&&sbSes())syncIn()},30000);
