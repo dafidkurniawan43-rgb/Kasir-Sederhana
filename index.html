@@ -710,6 +710,11 @@ body.belum-verif .owner-only{display:none!important}
       if(!a){CL.ready=false;setVerif(pilih!=="atasan");
         return rest("rpc/status_pengajuan_saya",{method:"POST",body:{}}).catch(function(){return null}).then(function(st){
           var kb=$("kirimbuktiBox");if(kb)kb.hidden=!(pilih==="atasan"&&(!st||st==="ditolak"));
+          var vn=$("verifNote");
+          if(vn){
+            if(st==="ditolak"){vn.textContent="Mohon maaf, pengajuan atasan kamu belum dapat kami setujui. Silakan kirim bukti kepemilikan toko yang lebih jelas di bawah ini, atau hubungi admin lewat WhatsApp untuk informasi lebih lanjut. Terima kasih atas pengertiannya.";}
+            else{vn.textContent="Akun atasan belum terverifikasi. Kirim bukti pengajuan dulu. Laporan, Produk, PIN, karyawan, dan cadangan akan terbuka setelah disetujui admin.";}
+          }
           setSync(st==="menunggu"?"Pengajuan atasan kamu sedang diperiksa admin. Tunggu persetujuan.":st==="ditolak"?"Pengajuan atasan ditolak admin. Hubungi admin lewat WhatsApp.":pilih==="karyawan"?"Akun kamu belum diundang atasan. Minta atasan menambahkan username kamu di tab Saya.":"Belum terhubung ke toko online.");
         });
       }
@@ -731,6 +736,8 @@ body.belum-verif .owner-only{display:none!important}
     });
   }
   function setVerif(v){
+    var sebelum=document.body.classList.contains("belum-verif");
+    if(v&&sebelum)toast("Akun atasan kamu sudah terverifikasi. Fitur atasan sudah terbuka.");
     document.body.classList.toggle("belum-verif",!v);
     var n=$("verifNote");if(n)n.hidden=!!v;
     try{localStorage.setItem("kasir-verif",v?"1":"0")}catch(e){}
@@ -969,6 +976,8 @@ body.belum-verif .owner-only{display:none!important}
   if(localStorage.getItem("kasir-role-pilih")==="atasan"&&localStorage.getItem("kasir-verif")!=="1")document.body.classList.add("belum-verif");
   document.querySelectorAll("#s-akun section").forEach(function(sec){var h=sec.querySelector("h2");if(h&&/Karyawan|Cadangan|PIN pemilik/.test(h.textContent))sec.classList.add("owner-only")});
   setTimeout(function(){if(sbSes())syncIn()},0);
+  setInterval(function(){if(document.body.classList.contains("belum-verif")&&sbSes())syncIn()},30000);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden&&document.body.classList.contains("belum-verif")&&sbSes())syncIn()});
   $("linkbtn").addEventListener("click",function(){
     var s=sbSes();if(!s)return;
     syncIn().then(function(){toast("Status diperbarui")});
