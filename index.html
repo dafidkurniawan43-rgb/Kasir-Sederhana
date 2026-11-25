@@ -372,6 +372,19 @@ body.belum-verif .tabs button[data-tab="laporan"],body.belum-verif .tabs button[
 body.belum-verif .tabs{grid-template-columns:repeat(2,1fr)}
 body.belum-verif .owner-only{display:none!important}
 body.selamat-open .tabs{display:none!important}
+/* ---- tombol yang lebih menarik ---- */
+button.ghost{background:linear-gradient(180deg,#f0faf6,#dcefe6);color:#0a5c4a;border:1px solid rgba(10,107,87,.14);box-shadow:0 1px 2px rgba(10,58,47,.06);font-weight:700;border-radius:16px;letter-spacing:.01em}
+button.ghost:hover{box-shadow:0 6px 16px rgba(10,58,47,.12);transform:translateY(-1px)}
+button.ghost:active:not(:disabled){transform:scale(.97)}
+button.pay{background:linear-gradient(135deg,#0f8a6d,#0a5c4a);color:#fff;border:0;border-radius:16px;box-shadow:0 8px 20px rgba(10,107,87,.28);font-weight:700;letter-spacing:.01em}
+button.pay:hover:not(:disabled){box-shadow:0 12px 26px rgba(10,107,87,.34);transform:translateY(-1px)}
+button.pay:disabled{box-shadow:none;opacity:.5}
+button.link{color:#0a6b57;font-weight:600;border-radius:12px}
+button.link.soft{color:#5a756d;font-weight:600}
+.tabs button[aria-selected="true"]{color:#0a6b57;font-weight:800}
+.tabs button:not([aria-selected="true"]){color:#7a8f88}
+.chips button,#rng button{border-radius:999px;font-weight:700;transition:background-color .2s ease,color .2s ease,transform .12s ease}
+.chips button.on,#rng button.on{background:linear-gradient(135deg,#0f8a6d,#0a5c4a);color:#fff;box-shadow:0 6px 14px rgba(10,107,87,.25)}
 </style>
 </head>
 <body data-tab="kasir">
@@ -472,8 +485,8 @@ body.selamat-open .tabs{display:none!important}
       <p class="muted" style="margin:0 0 10px">Karyawan hanya bisa jualan. Laporan, Produk, dan Saya tetap dikunci dengan PIN pemilik.</p>
       <div id="stlist"></div>
       <div id="onlineList" style="margin-top:10px"></div>
-      <button class="ghost" id="staddbtn" type="button" style="width:100%;margin-top:10px">Tambah karyawan</button>
-      <button class="ghost" id="invbtn" type="button" style="width:100%;margin-top:8px">Undang karyawan online (email)</button>
+      <button class="ghost" id="staddbtn" type="button" style="width:100%;margin-top:10px">Tambah karyawan di HP toko</button>
+      <button class="ghost" id="invbtn" type="button" style="width:100%;margin-top:8px">Undang karyawan dengan akun sendiri</button>
     </section>
     <section>
       <div class="head"><h2>Ganti sandi</h2></div>
@@ -860,10 +873,10 @@ body.selamat-open .tabs{display:none!important}
   function tampilOnline(list){
     var box=$("onlineList");if(!box)return;
     box.innerHTML=(list&&list.length)
-      ? list.map(function(k){return '<div class="rowx"><div><b>'+esc(k.nama||"Karyawan")+'</b><small>Karyawan online · tersambung</small></div><button class="ghost" data-hapusonline="'+esc(k.user_id)+'" style="min-height:40px">Hapus</button></div>'}).join("")
-      : '<p class="muted" style="margin:0">Belum ada karyawan online.</p>';
+      ? list.map(function(k){return '<div class="rowx"><div><b>'+esc(k.nama||"Karyawan")+'</b><small>Karyawan dengan akun sendiri · tersambung</small></div><button class="ghost" data-hapusonline="'+esc(k.user_id)+'" style="min-height:40px">Hapus</button></div>'}).join("")
+      : '<p class="muted" style="margin:0">Belum ada karyawan dengan akun sendiri.</p>';
   }
-  function inviteSheet(){sheet('<h2>Undang karyawan online</h2><p class="muted" style="margin:0">Karyawan harus daftar dulu di aplikasi ini (pilih Karyawan), lalu masukkan username-nya di sini.</p><input id="ie" placeholder="Username karyawan (contoh: budi)" autocomplete="off" autocapitalize="none"><input id="in2" maxlength="30" placeholder="Nama karyawan" autocomplete="off"><button class="pay" data-act="invite" type="button">Undang</button><button class="link soft" data-act="close" type="button">Batal</button>')}
+  function inviteSheet(){sheet('<h2>Undang karyawan dengan akun sendiri</h2><p class="muted" style="margin:0">Karyawan harus daftar dulu di aplikasi ini (pilih Karyawan), lalu masukkan username-nya di sini.</p><input id="ie" placeholder="Username karyawan (contoh: budi)" autocomplete="off" autocapitalize="none"><input id="in2" maxlength="30" placeholder="Nama karyawan" autocomplete="off"><button class="pay" data-act="invite" type="button">Undang</button><button class="link soft" data-act="close" type="button">Batal</button>')}
   function renderStaff(){
     if(localStorage.getItem("kasir-role-pilih")==="karyawan"){
       $("whobtn").textContent="Kasir: "+whoName();
@@ -872,7 +885,7 @@ body.selamat-open .tabs{display:none!important}
     }
     $("whobtn").disabled=false;
     $("whobtn").textContent="Kasir: "+whoName()+" · Ganti";
-    $("stlist").innerHTML=staff.length?staff.map(function(k){return '<div class="rowx"><div><b>'+esc(k.n)+'</b><small>'+(who===k.id?'Sedang bertugas':'Karyawan')+'</small></div><button class="ghost" data-stdel="'+k.id+'" style="min-height:40px">Hapus</button></div>'}).join(''):'<p class="muted" style="margin:0">Belum ada karyawan di HP ini.</p>';
+    $("stlist").innerHTML=staff.length?staff.map(function(k){return '<div class="rowx"><div><b>'+esc(k.n)+'</b><small>'+(who===k.id?'Sedang bertugas':'Karyawan di HP toko')+'</small></div><button class="ghost" data-stdel="'+k.id+'" style="min-height:40px">Hapus</button></div>'}).join(''):'<p class="muted" style="margin:0">Belum ada karyawan di HP toko.</p>';
   }
   function addStaffSheet(){
     if(!pin){sheet('<h2>Atur PIN dulu</h2><p class="muted" style="margin:0 0 12px">Karyawan hanya bisa ditambahkan setelah PIN pemilik diatur. PIN ini menjaga laporan dan produk tetap aman.</p><button class="pay" data-act="gopin" type="button">Atur PIN sekarang</button><button class="link soft" data-act="close" type="button">Nanti</button>');return}
