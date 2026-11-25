@@ -708,10 +708,17 @@ body.belum-verif .owner-only{display:none!important}
     T.sort(function(a,b){return b.ts-a.ts});
     applying=true;products=P;trx=T;debts=D;if(L)laci=L;if(SH)shift=SH;save();applying=false;render();
   }
+  function cekAkun(){
+    var s=sbSes();if(!s||!s.at)return Promise.resolve();
+    return fetch(window.__sbc.U+"/auth/v1/user",{headers:{"apikey":window.__sbc.K,"Authorization":"Bearer "+s.at}}).then(function(r){
+      if(r.status===401||r.status===403||r.status===404)return refreshM();
+      return null;
+    }).catch(function(){return null});
+  }
   function syncIn(){
     var s=sbSes();if(!s||!s.at||!s.id)return Promise.resolve();
     setSync("Menghubungkan ke toko online...");
-    return myLink().then(function(a){
+    return cekAkun().then(function(){return myLink()}).then(function(a){
       var pilih=localStorage.getItem("kasir-role-pilih")||"";
       if(!a){CL.ready=false;setVerif(pilih!=="atasan");
         return rest("rpc/status_pengajuan_saya",{method:"POST",body:{}}).catch(function(){return null}).then(function(st){
