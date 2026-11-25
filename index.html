@@ -488,6 +488,7 @@ body.selamat-open .tabs{display:none!important}
       <div class="head"><h2>Akun</h2></div>
       <p class="muted" id="acct"></p>
       <p class="muted" id="syncmsg" style="margin:8px 0 0"></p>
+      <p class="muted" id="tokoInfo" hidden style="margin:6px 0 0;font-weight:600;color:#0a6b57"></p>
       <p id="verifNote" hidden style="margin:8px 0 0;font-size:14px;color:#b42318">Akun atasan belum terverifikasi. Kirim bukti pengajuan dulu. Laporan, Produk, PIN, karyawan, dan cadangan akan terbuka setelah disetujui admin.</p>
       <button class="ghost" id="linkbtn" type="button" style="width:100%;margin-top:8px">Cek status toko online</button>
       <div id="kirimbuktiBox" hidden style="margin-top:12px">
@@ -747,6 +748,17 @@ body.selamat-open .tabs{display:none!important}
         window.__sbc.put(null);localStorage.removeItem("kasir-role-pilih");location.reload();return;
       }
       CL.toko=a.toko_id;CL.peran=a.peran;document.body.classList.toggle("karyawan",a.peran==="karyawan");setVerif(true);
+      if(a.peran==="karyawan"){
+        rest("anggota?select=nama&toko_id=eq."+a.toko_id+"&peran=eq.pemilik").then(function(pm){
+          var nmToko=(pm&&pm[0]&&pm[0].nama)||"";
+          var ti=$("tokoInfo");
+          if(ti&&nmToko){ti.hidden=false;ti.textContent="Bekerja di toko: "+nmToko}
+          if(nmToko&&localStorage.getItem("kasir-warung")!==nmToko){
+            try{localStorage.setItem("kasir-warung",nmToko)}catch(e){}
+            location.reload();
+          }
+        }).catch(function(){});
+      }
       return rest("data_toko?select=jenis,client_id,isi&toko_id=eq."+a.toko_id+"&limit=10000").then(function(rows){
         if(rows.length)applyRemote(rows);
         CL.ready=true;
@@ -818,7 +830,7 @@ body.selamat-open .tabs{display:none!important}
     }
     $("whobtn").disabled=false;
     $("whobtn").textContent="Kasir: "+whoName()+" · Ganti";
-    $("stlist").innerHTML=staff.length?staff.map(function(k){return '<div class="rowx"><div><b>'+esc(k.n)+'</b><small>'+(who===k.id?'Sedang bertugas':'Karyawan')+'</small></div><button class="ghost" data-stdel="'+k.id+'" style="min-height:40px">Hapus</button></div>'}).join(''):'<p class="muted" style="margin:0">Belum ada karyawan.</p>';
+    $("stlist").innerHTML=staff.length?staff.map(function(k){return '<div class="rowx"><div><b>'+esc(k.n)+'</b><small>'+(who===k.id?'Sedang bertugas':'Karyawan')+'</small></div><button class="ghost" data-stdel="'+k.id+'" style="min-height:40px">Hapus</button></div>'}).join(''):'<p class="muted" style="margin:0">Belum ada karyawan di HP ini.</p>';
   }
   function addStaffSheet(){
     if(!pin){toast("Atur PIN pemilik dulu di tab Saya");return}
