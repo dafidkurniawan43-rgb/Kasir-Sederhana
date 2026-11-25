@@ -678,7 +678,13 @@ body.belum-verif .owner-only{display:none!important}
     var s=sbSes();if(!s||!s.rt)return Promise.reject(new Error("Sesi habis. Keluar lalu masuk lagi."));
     return fetch(window.__sbc.U+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"Content-Type":"application/json","apikey":window.__sbc.K},body:JSON.stringify({refresh_token:s.rt})}).then(function(r){
       return r.json().catch(function(){return {}}).then(function(j){
-        if(!r.ok||!j.access_token)throw new Error("Sesi habis. Keluar lalu masuk lagi.");
+        if(!r.ok||!j.access_token){
+          if(r.status===400||r.status===401||r.status===403){
+            window.__sbc.put(null);try{localStorage.removeItem("kasir-role-pilih")}catch(e){}
+            location.reload();
+          }
+          throw new Error("Sesi belum bisa diperbarui. Coba lagi nanti.");
+        }
         s.at=j.access_token;s.rt=j.refresh_token||s.rt;s.exp=j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600);
         window.__sbc.put(s);return s;
       });
