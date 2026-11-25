@@ -414,6 +414,71 @@ button.pay{box-shadow:0 8px 20px rgba(10,58,47,.30)}
 button.ghost{color:#0a3a2f}
 .tabs button[aria-selected="true"]{color:#0a3a2f}
 .chips button.on,#rng button.on{background:linear-gradient(135deg,#0f5a48,#0a3a2f)}
+/* ==== REDESIGN HALAMAN DEPAN (hijau tua #063D30, emas #F5B83D) ==== */
+#welcome{background:radial-gradient(120% 60% at 85% -10%,rgba(245,184,61,.10),transparent 60%),radial-gradient(100% 70% at 0% 100%,rgba(15,90,72,.55),transparent 60%),linear-gradient(170deg,#0b4a3c 0%,#063D30 45%,#042A22 100%);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-y:auto}
+.wcard{max-width:440px;width:100%;margin:0 auto;padding:28px 22px 32px;gap:0;display:block;background:none!important;box-shadow:none!important;border:0!important}
+.wcard::before{display:none}
+.wtxt{text-align:left;width:100%;animation:wRise .6s cubic-bezier(.2,.7,.2,1) both}
+.wbrand{display:flex;align-items:center;gap:12px;width:auto;padding:0;background:none;border:0;margin:6px 0 26px}
+.wbrand .wl{width:46px;height:46px;border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.35),0 0 0 1px rgba(245,184,61,.25)}
+.wbrand span{font-family:"Sora",system-ui,sans-serif;font-size:1.02rem;font-weight:700;color:#fff;letter-spacing:.01em}
+.wtag{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#F5B83D;margin-bottom:14px}
+.wtag::before{content:"";width:22px;height:2px;border-radius:2px;background:#F5B83D}
+.wcard h1{font-family:"Sora",system-ui,sans-serif;font-size:clamp(1.85rem,7.2vw,2.35rem);font-weight:800;line-height:1.14;letter-spacing:-.03em;background:linear-gradient(180deg,#fff 0%,#dff3ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0 0 14px}
+.wcard .wtxt>p{font-size:.98rem;line-height:1.6;color:rgba(230,243,238,.72);margin:0 0 26px}
+.wfeat{gap:10px;margin:0 0 28px}
+.wfeat li{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:16px;padding:13px 16px;font-size:.92rem;color:rgba(240,250,246,.88);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:background .25s ease,border-color .25s ease}
+.wfeat li:hover{background:rgba(255,255,255,.07);border-color:rgba(245,184,61,.22)}
+.wfeat li b{color:#F5B83D;font-weight:700}
+.wgo{width:100%;min-height:56px;border:0;border-radius:16px;background:linear-gradient(135deg,#FFD35C 0%,#F5B83D 52%,#D99A22 100%);color:#063D30;font-family:"Sora",system-ui,sans-serif;font-size:1rem;font-weight:800;letter-spacing:.01em;box-shadow:0 14px 30px rgba(245,184,61,.28),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .15s ease,box-shadow .25s ease}
+.wgo:hover{transform:translateY(-1px);box-shadow:0 18px 36px rgba(245,184,61,.36),inset 0 1px 0 rgba(255,255,255,.55)}
+.wgo:active{transform:scale(.98)}
+.wsec{width:100%;min-height:54px;margin-top:12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(245,184,61,.35);color:#F5B83D;font-family:"Sora",system-ui,sans-serif;font-size:.96rem;font-weight:700;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .25s ease,transform .15s ease}
+.wsec:hover{background:rgba(245,184,61,.08)}
+.wsec:active{transform:scale(.98)}
+.wcard>.wtxt>small{display:block;text-align:center;color:rgba(230,243,238,.55);font-size:.8rem;line-height:1.6;margin-top:16px}
+.wlupa{margin-top:14px!important}
+.wlupa a{color:#F5B83D;text-decoration:none;font-weight:600;border-bottom:1px solid rgba(245,184,61,.4)}
+.wmock{display:none}
+@keyframes wRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.wtxt{animation:none}.wgo,.wsec,.wfeat li{transition:none}}
+@media (min-width:820px){
+  #welcome{display:flex;align-items:flex-start;justify-content:center;padding:40px 24px}
+  .wcard{margin:auto;max-width:1040px;display:grid;grid-template-columns:1.1fr .9fr;gap:72px;align-items:center;padding:0 40px}
+  .wtxt{padding:0}
+  .wcard h1{font-size:2.9rem}
+  .wmock{display:block;position:relative}
+  .wmock-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(245,184,61,.85);text-align:center;margin-bottom:14px}
+  .ph{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(244,251,248,.96));border:1px solid rgba(255,255,255,.7);border-radius:26px;padding:24px;max-width:340px;margin:0 auto;transform:rotate(-1.2deg);box-shadow:0 40px 80px rgba(0,0,0,.42),0 0 0 8px rgba(255,255,255,.04);transition:transform .4s ease}
+  .ph:hover{transform:rotate(0)}
+}
+/* ---- ilustrasi fitur ---- */
+.wfeat li{display:flex;align-items:center;gap:14px}
+.wfeat li>span:last-child{flex:1;line-height:1.45}
+.wic{flex:0 0 auto;width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(245,184,61,.16),rgba(245,184,61,.04));border:1px solid rgba(245,184,61,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.wic svg{width:28px;height:28px}
+/* ---- menu garis tiga halaman depan ---- */
+.wmenu{position:fixed;top:18px;right:18px;z-index:40;width:46px;height:46px;border-radius:14px;border:1px solid rgba(245,184,61,.3);background:rgba(255,255,255,.06);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:background .25s ease,transform .15s ease;min-height:0;padding:0}
+.wmenu:hover{background:rgba(245,184,61,.1)}
+.wmenu:active{transform:scale(.95)}
+.wmenu span{display:block;width:20px;height:2px;border-radius:2px;background:#F5B83D}
+.wdrawer{position:fixed;inset:0;z-index:60}
+.wdrawer[hidden]{display:none}
+.wover{position:absolute;inset:0;background:rgba(2,20,16,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:wFade .25s ease both}
+.wpanel{position:absolute;top:0;right:0;bottom:0;width:min(82%,320px);background:linear-gradient(180deg,#0b4a3c,#063D30 60%,#042A22);border-left:1px solid rgba(245,184,61,.18);box-shadow:-20px 0 50px rgba(0,0,0,.4);padding:22px 18px;display:flex;flex-direction:column;animation:wSlide .3s cubic-bezier(.2,.7,.2,1) both;font-family:"Plus Jakarta Sans",system-ui,sans-serif}
+.wphead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.wpbrand{font-family:"Sora",system-ui,sans-serif;font-weight:800;color:#F5B83D;letter-spacing:.08em;text-transform:uppercase;font-size:.85rem}
+.wpclose{width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font-size:22px;line-height:1;cursor:pointer;min-height:0;padding:0}
+.wnav{display:grid;gap:10px}
+.wni{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;padding:0 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#f0faf6;font-size:.98rem;font-weight:600;text-decoration:none;cursor:pointer;transition:background .2s ease,border-color .2s ease;text-align:left}
+.wni:hover{background:rgba(245,184,61,.08);border-color:rgba(245,184,61,.25)}
+.wnarrow{color:#F5B83D;font-size:1.3rem;line-height:1}
+.wbadge{font-size:11px;font-weight:700;letter-spacing:.04em;color:#063D30;background:linear-gradient(135deg,#FFD35C,#F5B83D);padding:5px 10px;border-radius:999px}
+.wpnote{margin:auto 0 0;padding-top:18px;font-size:.85rem;line-height:1.6;color:rgba(230,243,238,.6)}
+.wpnote b{color:#F5B83D}
+@keyframes wFade{from{opacity:0}to{opacity:1}}
+@keyframes wSlide{from{transform:translateX(100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.wover,.wpanel{animation:none}}
 </style>
 </head>
 <body data-tab="kasir">
@@ -620,6 +685,33 @@ button.ghost{color:#0a3a2f}
   </div>
 </div>
 <div id="welcome" hidden>
+  <button class="wmenu" id="wmenu" type="button" aria-label="Buka menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="wdrawer" id="wdrawer" hidden>
+    <div class="wover" id="woverlay"></div>
+    <aside class="wpanel" role="dialog" aria-label="Menu">
+      <div class="wphead">
+        <span class="wpbrand">Menu</span>
+        <button class="wpclose" id="wclose" type="button" aria-label="Tutup menu">&times;</button>
+      </div>
+      <nav class="wnav">
+        <button class="wni" type="button" data-wcek="fitur">
+          <span>Fitur utama</span><span class="wnarrow">&rsaquo;</span>
+        </button>
+        <button class="wni" type="button" data-wcek="pro">
+          <span>Paket Pro</span><span class="wbadge">Segera hadir</span>
+        </button>
+        <button class="wni" type="button" data-wcek="jual">
+          <span>Jual aplikasi</span><span class="wbadge">Segera hadir</span>
+        </button>
+        <a class="wni" href="https://wa.me/6285604922631?text=Halo%20admin%2C%20saya%20mau%20tanya%20tentang%20Kasir%20Sederhana." target="_blank" rel="noopener">
+          <span>Hubungi admin</span><span class="wnarrow">&rsaquo;</span>
+        </a>
+      </nav>
+      <p class="wpnote" id="wnote">Pilih menu untuk melihat informasi.</p>
+    </aside>
+  </div>
   <div class="wcard">
     <div class="wtxt">
       <div class="wbrand"><img class="wl" src="icon-192.png" alt=""><span>Kasir Sederhana</span></div>
@@ -627,10 +719,22 @@ button.ghost{color:#0a3a2f}
       <h1>Kasir warung yang rapi, langsung dari HP.</h1>
       <p>Catat penjualan, kelola stok, dan pantau laba harian tanpa ribet.</p>
       <ul class="wfeat">
-        <li><b>Hitung otomatis</b> belanja dan kembalian</li>
-        <li><b>Banyak cara bayar</b>: tunai, QRIS, atau catat utang</li>
-        <li><b>Laporan jelas</b>: omzet, laba, dan stok menipis</li>
-        <li><b>Cetak struk</b> lewat printer Bluetooth atau PDF</li>
+        <li>
+          <span class="wic" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="#F5B83D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="11" y="6" width="26" height="36" rx="5"/><rect x="15" y="11" width="18" height="8" rx="2" fill="rgba(245,184,61,.15)"/><path d="M16 26h4M24 26h4M16 32h4M24 32h4M32 26v12"/></svg></span>
+          <span><b>Hitung otomatis</b> belanja dan kembalian</span>
+        </li>
+        <li>
+          <span class="wic" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="#F5B83D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="28" height="18" rx="4"/><path d="M6 20h28"/><rect x="16" y="26" width="26" height="12" rx="3" fill="rgba(245,184,61,.12)"/><circle cx="29" cy="32" r="2.2"/></svg></span>
+          <span><b>Banyak cara bayar</b>: tunai, QRIS, atau catat utang</span>
+        </li>
+        <li>
+          <span class="wic" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="#F5B83D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 40h32"/><rect x="11" y="24" width="6" height="14" rx="1.5" fill="rgba(245,184,61,.15)"/><rect x="21" y="16" width="6" height="22" rx="1.5" fill="rgba(245,184,61,.15)"/><rect x="31" y="9" width="6" height="29" rx="1.5" fill="rgba(245,184,61,.15)"/><path d="M11 20l10-4 10-6 8-2"/></svg></span>
+          <span><b>Laporan jelas</b>: omzet, laba, dan stok menipis</span>
+        </li>
+        <li>
+          <span class="wic" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="#F5B83D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V8h20v10"/><rect x="8" y="18" width="32" height="14" rx="3"/><path d="M14 30v10h20V30"/><path d="M18 36h12M18 39h8"/><circle cx="35" cy="23" r="1.4" fill="#F5B83D"/></svg></span>
+          <span><b>Cetak struk</b> lewat printer Bluetooth atau PDF</span>
+        </li>
       </ul>
       <button class="wgo" id="wgo" type="button">Masuk ke akun</button>
       <button class="wsec" id="wreg" type="button">Buat akun baru</button>
@@ -1584,6 +1688,19 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   function openAuth(m){setMode(m||"login");$("lock").hidden=true;$("auth").hidden=false;setTimeout(function(){try{$("au").focus()}catch(e){}},60)}
   $("wgo").addEventListener("click",function(){var w=$("welcome");w.classList.add("out");setTimeout(function(){w.hidden=true;w.classList.remove("out");openAuth("login")},300)});
   $("wreg").addEventListener("click",function(){$("welcome").hidden=true;openAuth("reg")});
+  function bukaMenu(){$("wdrawer").hidden=false;$("wmenu").setAttribute("aria-expanded","true")}
+  function tutupMenu(){$("wdrawer").hidden=true;$("wmenu").setAttribute("aria-expanded","false")}
+  $("wmenu").addEventListener("click",bukaMenu);
+  $("wclose").addEventListener("click",tutupMenu);
+  $("woverlay").addEventListener("click",tutupMenu);
+  document.querySelectorAll(".wni[data-wcek]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var k=b.getAttribute("data-wcek"),n=$("wnote");
+      if(k==="fitur"){n.innerHTML="Kasir: jualan, scan barcode, catat utang, laporan, cetak struk, dan kelola karyawan.";}
+      if(k==="pro"){n.innerHTML="<b>Paket Pro</b> akan segera hadir. Informasi harga dan fitur tambahan akan diumumkan di sini.";}
+      if(k==="jual"){n.innerHTML="<b>Jual aplikasi</b> akan segera hadir. Untuk sekarang, hubungi admin lewat WhatsApp.";}
+    });
+  });
   $("gbtn").addEventListener("click",function(){openAuth("login")});
   $("gbar-btn").addEventListener("click",function(){openAuth("login")});
   $("lgo").addEventListener("click",function(){openAuth("login")});
