@@ -1271,8 +1271,16 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
       if(p!==$("ap2").value){err("Ulangi sandi tidak sama.");return}
     }
     busy=true;$("asub").disabled=true;var old=$("asub").textContent;$("asub").textContent="Tunggu sebentar...";
-    var req=reg?api("/auth/v1/signup",{email:em(u),password:p,data:{username:u,wa:w,shop:sh}}):api("/auth/v1/token?grant_type=password",{email:em(u),password:p});
+    var req=reg
+      ?fetch(U+"/rest/v1/rpc/wa_sudah_dipakai",{method:"POST",headers:{"Content-Type":"application/json","apikey":K},body:JSON.stringify({p_wa:w})})
+          .then(function(r){return r.ok?r.json():false}).catch(function(){return false})
+          .then(function(dipakai){
+            if(dipakai)return {ok:false,dup:true,msg:"Nomor WhatsApp ini sudah terdaftar di akun lain. Gunakan nomor lain, atau hubungi admin jika ini nomor kamu."};
+            return api("/auth/v1/signup",{email:em(u),password:p,data:{username:u,wa:w,shop:sh}});
+          })
+      :api("/auth/v1/token?grant_type=password",{email:em(u),password:p});
     req.then(function(r){
+      if(r.dup){busy=false;$("asub").disabled=false;$("asub").textContent=old;err(r.msg);return}
       busy=false;$("asub").disabled=false;$("asub").textContent=old;
       if(r.ok&&r.j&&r.j.access_token){
         var n=toSes(r.j);if(!n.u)n.u=u;if(!n.wa&&w)n.wa=w;if(!n.sh&&sh)n.sh=sh;put(n);try{if(n.sh&&!localStorage.getItem("kasir-warung"))localStorage.setItem("kasir-warung",n.sh)}catch(e){}
