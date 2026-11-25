@@ -385,6 +385,35 @@ button.link.soft{color:#5a756d;font-weight:600}
 .tabs button:not([aria-selected="true"]){color:#7a8f88}
 .chips button,#rng button{border-radius:999px;font-weight:700;transition:background-color .2s ease,color .2s ease,transform .12s ease}
 .chips button.on,#rng button.on{background:linear-gradient(135deg,#0f8a6d,#0a5c4a);color:#fff;box-shadow:0 6px 14px rgba(10,107,87,.25)}
+/* ---- layar pembuka yang lebih mewah ---- */
+#welcome{background:radial-gradient(120% 80% at 80% 0%,#14705a 0%,transparent 55%),radial-gradient(90% 70% at 0% 100%,#0c4a3c 0%,transparent 60%),linear-gradient(160deg,#08352b,#052720)}
+.wcard{position:relative;overflow:hidden}
+.wcard::before{content:"";position:absolute;inset:-40% -20% auto auto;width:420px;height:420px;background:radial-gradient(closest-side,rgba(240,185,58,.18),transparent);pointer-events:none}
+.wbrand{padding:6px 12px 6px 6px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);width:fit-content;margin-bottom:18px}
+.wbrand .wl{width:36px;height:36px;border-radius:10px;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.wtag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#f0b93a;margin-bottom:10px}
+.wcard h1{background:linear-gradient(180deg,#ffffff,#d9efe7);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;letter-spacing:-.02em;line-height:1.15}
+.wfeat li{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.wgo{background:linear-gradient(135deg,#ffd55c,#f0b93a 55%,#dca02a);color:#0a3a2f;border:0;border-radius:18px;box-shadow:0 14px 30px rgba(240,185,58,.35),inset 0 1px 0 rgba(255,255,255,.5);font-weight:800;letter-spacing:.01em}
+.wsec{border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.wlupa{display:block;margin-top:10px;color:#9fc9bb}
+.wlupa a{color:#f0b93a;text-decoration:underline}
+.wmock{position:relative}
+.wmock-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9fc9bb;text-align:center;margin-bottom:12px}
+.ph{background:linear-gradient(180deg,#ffffff,#f5fbf8);border:1px solid rgba(255,255,255,.7);border-radius:26px;padding:22px;box-shadow:0 30px 70px rgba(0,0,0,.45),0 0 0 6px rgba(255,255,255,.06);max-width:330px;transform:rotate(-1.5deg)}
+.ph-h{margin-bottom:16px}
+.ph-h b{font-family:"Sora",system-ui,sans-serif;font-size:1.25rem}
+.ph-r{padding:10px 0}
+.ph-t{font-size:1.1rem;padding:14px 0 16px}
+.ph-btn{background:linear-gradient(135deg,#ffd55c,#f0b93a);color:#0a3a2f;border-radius:16px;padding:14px;box-shadow:0 10px 22px rgba(240,185,58,.35);font-weight:800}
+/* ---- warna hijau tua yang seragam ---- */
+#welcome{background:radial-gradient(120% 80% at 80% 0%,#0f5a48 0%,transparent 55%),linear-gradient(160deg,#0a3a2f,#062a22)}
+button.pay{background:linear-gradient(135deg,#0f5a48,#0a3a2f)}
+button.pay:hover:not(:disabled){box-shadow:0 12px 26px rgba(10,58,47,.38)}
+button.pay{box-shadow:0 8px 20px rgba(10,58,47,.30)}
+button.ghost{color:#0a3a2f}
+.tabs button[aria-selected="true"]{color:#0a3a2f}
+.chips button.on,#rng button.on{background:linear-gradient(135deg,#0f5a48,#0a3a2f)}
 </style>
 </head>
 <body data-tab="kasir">
@@ -594,8 +623,9 @@ button.link.soft{color:#5a756d;font-weight:600}
   <div class="wcard">
     <div class="wtxt">
       <div class="wbrand"><img class="wl" src="icon-192.png" alt=""><span>Kasir Sederhana</span></div>
+      <span class="wtag">Untuk warung, kafe, dan toko kecil</span>
       <h1>Kasir warung yang rapi, langsung dari HP.</h1>
-      <p>Catat penjualan, kelola stok, dan pantau laba harian tanpa ribet. Cocok untuk warung, toko kelontong, dan usaha kecil.</p>
+      <p>Catat penjualan, kelola stok, dan pantau laba harian tanpa ribet.</p>
       <ul class="wfeat">
         <li><b>Hitung otomatis</b> belanja dan kembalian</li>
         <li><b>Banyak cara bayar</b>: tunai, QRIS, atau catat utang</li>
@@ -605,14 +635,16 @@ button.link.soft{color:#5a756d;font-weight:600}
       <button class="wgo" id="wgo" type="button">Masuk ke akun</button>
       <button class="wsec" id="wreg" type="button">Buat akun baru</button>
       <small>Login diperlukan untuk memakai semua fitur.</small>
-      <small style="display:block;margin-top:6px">Lupa sandi? <a href="https://wa.me/6285604922631?text=Halo%20admin%2C%20saya%20lupa%20sandi%20akun%20Kasir%20Sederhana.%20Username%20saya%3A%20" target="_blank" rel="noopener" style="color:#f0b93a">Hubungi admin lewat WhatsApp</a></small>
+      <small class="wlupa">Lupa sandi? <a href="https://wa.me/6285604922631?text=Halo%20admin%2C%20saya%20lupa%20sandi%20akun%20Kasir%20Sederhana.%20Username%20saya%3A%20" target="_blank" rel="noopener">Hubungi admin lewat WhatsApp</a></small>
     </div>
     <div class="wmock" aria-hidden="true">
+      <div class="wmock-label">Contoh tampilan kasir</div>
       <div class="ph">
-        <div class="ph-h"><span>Penjualan hari ini</span><b>Rp43.000</b></div>
-        <div class="ph-r"><span>porsi besar × 2</span><b>Rp20.000</b></div>
-        <div class="ph-r"><span>aqua × 1</span><b>Rp1.000</b></div>
-        <div class="ph-t"><span>Total</span><b>Rp21.000</b></div>
+        <div class="ph-h"><span>Penjualan hari ini</span><b>Rp35.000</b></div>
+        <div class="ph-r"><span>Nasi goreng spesial × 1</span><b>Rp15.000</b></div>
+        <div class="ph-r"><span>Es teh manis × 2</span><b>Rp10.000</b></div>
+        <div class="ph-r"><span>Roti bakar × 1</span><b>Rp10.000</b></div>
+        <div class="ph-t"><span>Total</span><b>Rp35.000</b></div>
         <div class="ph-btn">Selesaikan pembayaran</div>
       </div>
     </div>
@@ -1110,6 +1142,24 @@ button.link.soft{color:#5a756d;font-weight:600}
     else if(a==="wpick"){var pid=+b.getAttribute("data-id"),pk=staff.filter(function(x){return x.id===pid})[0];if(!pk)return;sheet('<h2>PIN '+esc(pk.n)+'</h2><input id="wp" type="password" inputmode="numeric" maxlength="6" placeholder="PIN karyawan" autocomplete="off"><button class="pay" data-act="wpin" data-id="'+pid+'" type="button">Mulai jualan</button><button class="link soft" data-act="close" type="button">Batal</button>');setTimeout(function(){$("wp").focus()},60)}
     else if(a==="wpin"){var qid=+b.getAttribute("data-id"),qk=staff.filter(function(x){return x.id===qid})[0];if(!qk)return;if(hp($("wp").value)!==qk.p){toast("PIN salah");return}who=qid;unlocked=false;save();render();closeSheet();toast("Kasir: "+qk.n)}
     else if(a==="gopin"){closeSheet();$("pinset").click()}
+    else if(a==="lupapin"){
+      if(localStorage.getItem("kasir-role-pilih")==="karyawan"){toast("Hubungi pemilik untuk mengatur ulang PIN.");return}
+      sheet('<h2>Lupa PIN</h2><p class="muted" style="margin:0 0 10px">Masukkan sandi akun pemilik untuk menghapus PIN lama. Setelah itu, buat PIN baru lewat Atur PIN di tab Saya.</p><input id="lpw" type="password" placeholder="Sandi akun" autocomplete="current-password"><button class="pay" data-act="lupapin2" type="button">Reset PIN</button><button class="link soft" data-act="close" type="button">Batal</button>');
+      setTimeout(function(){$("lpw").focus()},60);
+    }
+    else if(a==="lupapin2"){
+      var se=sbSes(),pw=$("lpw").value;
+      if(!se||!se.u){toast("Masuk dulu");return}
+      if(!pw){toast("Isi sandi akun dulu");return}
+      fetch(window.__sbc.U+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"Content-Type":"application/json","apikey":window.__sbc.K},body:JSON.stringify({email:"kasir-"+se.u.toLowerCase()+"@gmail.com",password:pw})})
+        .then(function(r){return r.ok?r.json():null})
+        .then(function(j){
+          if(!j){toast("Sandi akun salah");return}
+          pin="";unlocked=true;save();render();closeSheet();
+          toast("PIN dihapus. Buat PIN baru lewat Atur PIN di tab Saya.");
+        })
+        .catch(function(){toast("Tidak ada internet")});
+    }
     else if(a==="pinok"){if(hp($("pn2").value)===pin){unlocked=true;closeSheet();var f=pinCb;pinCb=null;if(f)f()}else toast("PIN salah")}
     else if(a==="pinsave"){var pv=$("pn2").value;if(!/^\d{4,6}$/.test(pv)){toast("PIN harus 4 sampai 6 angka");return}pin=hp(pv);unlocked=true;save();render();closeSheet();toast("PIN disimpan")}
     else if(a==="pindel"){pin="";save();render();closeSheet();toast("PIN dihapus")}
@@ -1205,7 +1255,7 @@ button.link.soft{color:#5a756d;font-weight:600}
   var hp=function(s){var h=5381;s="kasir"+s;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return String(h)};
   function askPin(cb){
     if(!pin||unlocked){cb();return}
-    pinCb=cb;sheet('<h2>Masukkan PIN pemilik</h2><input id="pn2" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="off"><button class="pay" data-act="pinok" type="button">Buka</button><button class="link soft" data-act="close" type="button">Batal</button>');
+    pinCb=cb;sheet('<h2>Masukkan PIN pemilik</h2><input id="pn2" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="off"><button class="pay" data-act="pinok" type="button">Buka</button><button class="link soft" data-act="lupapin" type="button">Lupa PIN?</button><button class="link soft" data-act="close" type="button">Batal</button>');
     setTimeout(function(){$("pn2").focus()},60);
   }
   function pinSheet(){
