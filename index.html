@@ -1235,6 +1235,22 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
     $("rolhint").textContent=role==="atasan"?"Pilih ini kalau kamu pemilik toko.":"Pilih ini kalau kamu bekerja di toko. Minta atasan mengundang username kamu.";
   }
   function setRole(r){role=r;applyRole()}
+  function selamat(peran,cb){
+    var atasan=peran==="atasan";
+    var judul=atasan?"Selamat, akun atasan kamu berhasil dibuat":"Selamat, akun karyawan kamu berhasil dibuat";
+    var isi=atasan
+      ?"Akun ini belum terverifikasi sebagai pemilik. Bukti kepemilikan toko kamu sedang diperiksa admin. Laporan, Produk, PIN, dan fitur pemilik lainnya akan terbuka setelah disetujui."
+      :"Semangat bekerja! Minta atasan menambahkan username kamu di menu Karyawan, lalu kamu bisa mulai jualan.";
+    var o=document.createElement("div");
+    o.style.cssText="position:fixed;inset:0;background:rgba(10,58,47,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999";
+    o.innerHTML='<div style="background:#fff;border-radius:22px;padding:22px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
+      +'<div style="font-size:40px">'+(atasan?"🎉":"👋")+'</div>'
+      +'<h3 style="margin:8px 0;font-size:1.1rem;color:#0a3a2f">'+judul+'</h3>'
+      +'<p style="margin:0 0 16px;color:#4b6b62;line-height:1.5;font-size:.95rem">'+isi+'</p>'
+      +'<button id="selOk" type="button" style="width:100%;min-height:48px;border:0;border-radius:14px;background:#0a6b57;color:#fff;font-weight:700;font-size:1rem">Mengerti</button></div>';
+    document.body.appendChild(o);
+    o.querySelector("#selOk").onclick=function(){o.remove();cb()};
+  }
   function uploadBukti(tok,uid,file){
     var ext=((file.name||"").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
     var path=uid+"/bukti-"+Date.now()+"."+ext;
@@ -1303,7 +1319,8 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
         var kirim=(reg&&role==="atasan")
           ?uploadBukti(n.at,n.id,fileBukti).then(function(path){return rpc("ajukan_atasan",{p_nama_toko:sh||n.u,p_wa:w,p_bukti:path},n.at)}).then(function(r){if(!r.ok)throw new Error(why(r))})
           :Promise.resolve();
-        kirim.then(function(){if(reg){simpanKode(n.at,function(kode,msg){if(kode)showKodeBox(kode,function(){location.reload()});else{toast(msg);location.reload()}})}else location.reload()})
+        var peranDaftar=role;
+        kirim.then(function(){if(reg){simpanKode(n.at,function(kode,msg){if(kode)showKodeBox(kode,function(){selamat(peranDaftar,function(){location.reload()})});else{selamat(peranDaftar,function(){location.reload()})}})}else location.reload()})
           .catch(function(e){err("Akun dibuat, tapi bukti belum terkirim: "+(e&&e.message||"")+". Masuk lagi nanti untuk mengirim ulang.")});
       }else if(r.ok&&reg){
         err("Akun dibuat, tapi verifikasi email di Supabase masih aktif. Matikan 'Confirm email' lalu coba Masuk.");
