@@ -370,6 +370,7 @@ body.karyawan .tabs button[data-tab="produk"],body.karyawan .tabs button[data-ta
 body.belum-verif .tabs button[data-tab="laporan"],body.belum-verif .tabs button[data-tab="produk"]{display:none}
 body.belum-verif .tabs{grid-template-columns:repeat(2,1fr)}
 body.belum-verif .owner-only{display:none!important}
+body.selamat-open .tabs{display:none!important}
 </style>
 </head>
 <body data-tab="kasir">
@@ -1242,14 +1243,16 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
       ?"Akun ini belum terverifikasi sebagai pemilik. Bukti kepemilikan toko kamu sedang diperiksa admin. Laporan, Produk, PIN, dan fitur pemilik lainnya akan terbuka setelah disetujui."
       :"Semangat bekerja! Minta atasan menambahkan username kamu di menu Karyawan, lalu kamu bisa mulai jualan.";
     var o=document.createElement("div");
-    o.style.cssText="position:fixed;inset:0;background:rgba(10,58,47,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999";
+    o.id="selamatBox";
+    o.style.cssText="position:fixed;inset:0;background:rgba(10,58,47,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:2147483000";
+    document.body.classList.add("selamat-open");
     o.innerHTML='<div style="background:#fff;border-radius:22px;padding:22px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
       +'<div style="font-size:40px">'+(atasan?"🎉":"👋")+'</div>'
       +'<h3 style="margin:8px 0;font-size:1.1rem;color:#0a3a2f">'+judul+'</h3>'
       +'<p style="margin:0 0 16px;color:#4b6b62;line-height:1.5;font-size:.95rem">'+isi+'</p>'
       +'<button id="selOk" type="button" style="width:100%;min-height:48px;border:0;border-radius:14px;background:#0a6b57;color:#fff;font-weight:700;font-size:1rem">Mengerti</button></div>';
     document.body.appendChild(o);
-    o.querySelector("#selOk").onclick=function(){o.remove();cb()};
+    o.querySelector("#selOk").onclick=function(){o.remove();document.body.classList.remove("selamat-open");cb()};
   }
   function uploadBukti(tok,uid,file){
     var ext=((file.name||"").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
@@ -1429,7 +1432,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   });
   document.addEventListener("visibilitychange",function(){if(!document.hidden)refresh()});
   function openAuth(m){setMode(m||"login");$("lock").hidden=true;$("auth").hidden=false;setTimeout(function(){try{$("au").focus()}catch(e){}},60)}
-  $("wgo").addEventListener("click",function(){var w=$("welcome");w.classList.add("out");setTimeout(function(){w.hidden=true;w.classList.remove("out")},300)});
+  $("wgo").addEventListener("click",function(){var w=$("welcome");w.classList.add("out");setTimeout(function(){w.hidden=true;w.classList.remove("out");openAuth("login")},300)});
   $("wreg").addEventListener("click",function(){$("welcome").hidden=true;openAuth("reg")});
   $("gbtn").addEventListener("click",function(){openAuth("login")});
   $("gbar-btn").addEventListener("click",function(){openAuth("login")});
@@ -1437,7 +1440,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
   $("lno").addEventListener("click",function(){$("lock").hidden=true});
   $("aclose").addEventListener("click",function(){$("auth").hidden=true;err("")});
   function guest(){return document.body.classList.contains("guest")}
-  function free(t){return t&&t.closest&&t.closest("#auth,#sbox[data-free],#welcome,#lock,#gbtn,#gwho,#gbar-btn,[data-add],[data-sub]")}
+  function free(t){return t&&t.closest&&t.closest("#auth,#sbox[data-free],#welcome,#lock,#gbtn,#gwho,#gbar-btn,[data-add],[data-sub],#selamatBox")}
   document.addEventListener("click",function(e){
     if(!guest()||free(e.target))return;
     e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();$("lock").hidden=false;
