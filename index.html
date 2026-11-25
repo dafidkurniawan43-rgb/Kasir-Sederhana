@@ -458,6 +458,8 @@ body.selamat-open .tabs{display:none!important}
     <section>
       <div class="head"><h2>Profil</h2></div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><span id="pfav" style="width:48px;height:48px;border-radius:50%;background:#f0b93a;color:#0a3a2f;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px">?</span><div><b id="pfname">-</b><div class="muted" id="pfuser"></div></div></div>
+      <button class="ghost" id="pfFotoBtn" type="button" style="width:100%;margin:0 0 12px">Ubah foto profil</button>
+      <input id="pfFoto" type="file" accept="image/*" hidden>
       <label style="display:block;font-size:13px;margin:8px 0 4px">Nama toko</label>
       <input id="pfshop" maxlength="40" placeholder="Nama warung kamu" style="width:100%;box-sizing:border-box">
       <label style="display:block;font-size:13px;margin:8px 0 4px">Nomor WhatsApp</label>
@@ -729,6 +731,7 @@ body.selamat-open .tabs{display:none!important}
   }
   function syncIn(){
     var s=sbSes();if(!s||!s.at||!s.id)return Promise.resolve();
+    loadAvatar();
     setSync("Menghubungkan ke toko online...");
     return cekAkun().then(function(){return myLink()}).then(function(a){
       var pilih=localStorage.getItem("kasir-role-pilih")||"";
@@ -781,6 +784,45 @@ body.selamat-open .tabs{display:none!important}
     var n=$("verifNote");if(n)n.hidden=!!v;
     try{localStorage.setItem("kasir-verif",v?"1":"0")}catch(e){}
   }
+  function kecilkanFoto(file){
+    return new Promise(function(res,rej){
+      var img=new Image(),url=URL.createObjectURL(file);
+      img.onload=function(){
+        var sisi=Math.min(img.width,img.height),c=document.createElement("canvas");
+        c.width=160;c.height=160;
+        c.getContext("2d").drawImage(img,(img.width-sisi)/2,(img.height-sisi)/2,sisi,sisi,0,0,160,160);
+        URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",0.8));
+      };
+      img.onerror=function(){rej(new Error("foto tidak bisa dibaca"))};
+      img.src=url;
+    });
+  }
+  function setAvatar(av){
+    var el=$("pfav");if(!el)return;
+    if(av){el.style.backgroundImage="url("+av+")";el.style.backgroundSize="cover";el.style.backgroundPosition="center";el.textContent=""}
+    else{el.style.backgroundImage="";var se=sbSes();el.textContent=((se&&se.u)||"?").charAt(0).toUpperCase()}
+  }
+  function loadAvatar(){
+    var s=sbSes();if(!s)return;
+    if(s.av){setAvatar(s.av);return}
+    fetch(window.__sbc.U+"/auth/v1/user",{headers:{"apikey":window.__sbc.K,"Authorization":"Bearer "+s.at}}).then(function(r){return r.ok?r.json():null}).then(function(j){
+      var av=j&&j.user_metadata&&j.user_metadata.avatar;
+      if(av){var sess=JSON.parse(localStorage.getItem("kasir-auth")||"null");if(sess){sess.av=av;window.__sbc.put(sess)}setAvatar(av)}
+    }).catch(function(){});
+  }
+  $("pfFotoBtn").addEventListener("click",function(){$("pfFoto").click()});
+  $("pfFoto").addEventListener("change",function(){
+    var f=this.files[0];var inp=this;var s=sbSes();
+    if(!f||!s){inp.value="";return}
+    if(f.size>5*1024*1024){toast("Foto terlalu besar. Maksimal 5 MB.");inp.value="";return}
+    kecilkanFoto(f).then(function(av){
+      setAvatar(av);
+      var sess=JSON.parse(localStorage.getItem("kasir-auth")||"null");
+      if(sess){sess.av=av;window.__sbc.put(sess)}
+      return fetch(window.__sbc.U+"/auth/v1/user",{method:"PUT",headers:{"Content-Type":"application/json","apikey":window.__sbc.K,"Authorization":"Bearer "+s.at},body:JSON.stringify({data:{avatar:av}})})
+        .then(function(r){if(!r.ok)throw new Error("gagal menyimpan (kode "+r.status+")");toast("Foto profil tersimpan")});
+    }).catch(function(e){toast("Gagal: "+e.message)}).then(function(){inp.value=""});
+  });
   function uploadBuktiM(file){
     var s=sbSes();
     var ext=((file.name||"").split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
@@ -833,7 +875,7 @@ body.selamat-open .tabs{display:none!important}
     $("stlist").innerHTML=staff.length?staff.map(function(k){return '<div class="rowx"><div><b>'+esc(k.n)+'</b><small>'+(who===k.id?'Sedang bertugas':'Karyawan')+'</small></div><button class="ghost" data-stdel="'+k.id+'" style="min-height:40px">Hapus</button></div>'}).join(''):'<p class="muted" style="margin:0">Belum ada karyawan di HP ini.</p>';
   }
   function addStaffSheet(){
-    if(!pin){toast("Atur PIN pemilik dulu di tab Saya");return}
+    if(!pin){sheet('<h2>Atur PIN dulu</h2><p class="muted" style="margin:0 0 12px">Karyawan hanya bisa ditambahkan setelah PIN pemilik diatur. PIN ini menjaga laporan dan produk tetap aman.</p><button class="pay" data-act="gopin" type="button">Atur PIN sekarang</button><button class="link soft" data-act="close" type="button">Nanti</button>');return}
     askPin(function(){sheet('<h2>Tambah karyawan</h2><input id="stn" maxlength="30" placeholder="Nama karyawan" autocomplete="off"><input id="stp" type="password" inputmode="numeric" maxlength="6" placeholder="PIN karyawan (4-6 angka)" autocomplete="off"><button class="pay" data-act="stadd" type="button">Simpan karyawan</button><button class="link soft" data-act="close" type="button">Batal</button>');setTimeout(function(){$("stn").focus()},60)});
   }
   function whoSheet(){
@@ -1054,6 +1096,7 @@ body.selamat-open .tabs{display:none!important}
     else if(a==="wsw"){var wid=+b.getAttribute("data-id");if(wid===0){askPin(function(){who=0;unlocked=true;save();render();closeSheet();toast("Kasir: Pemilik")});return}}
     else if(a==="wpick"){var pid=+b.getAttribute("data-id"),pk=staff.filter(function(x){return x.id===pid})[0];if(!pk)return;sheet('<h2>PIN '+esc(pk.n)+'</h2><input id="wp" type="password" inputmode="numeric" maxlength="6" placeholder="PIN karyawan" autocomplete="off"><button class="pay" data-act="wpin" data-id="'+pid+'" type="button">Mulai jualan</button><button class="link soft" data-act="close" type="button">Batal</button>');setTimeout(function(){$("wp").focus()},60)}
     else if(a==="wpin"){var qid=+b.getAttribute("data-id"),qk=staff.filter(function(x){return x.id===qid})[0];if(!qk)return;if(hp($("wp").value)!==qk.p){toast("PIN salah");return}who=qid;unlocked=false;save();render();closeSheet();toast("Kasir: "+qk.n)}
+    else if(a==="gopin"){closeSheet();$("pinset").click()}
     else if(a==="pinok"){if(hp($("pn2").value)===pin){unlocked=true;closeSheet();var f=pinCb;pinCb=null;if(f)f()}else toast("PIN salah")}
     else if(a==="pinsave"){var pv=$("pn2").value;if(!/^\d{4,6}$/.test(pv)){toast("PIN harus 4 sampai 6 angka");return}pin=hp(pv);unlocked=true;save();render();closeSheet();toast("PIN disimpan")}
     else if(a==="pindel"){pin="";save();render();closeSheet();toast("PIN dihapus")}
@@ -1375,7 +1418,7 @@ var sheet=window.__ui.sheet,closeSheet=window.__ui.closeSheet,toast=window.__ui.
     });
   });
   function pfMsg(t,bad){var m=$("pfmsg");m.textContent=t;m.hidden=!t;m.style.color=bad?"#b42318":""}
-  function pfFill(){var x=ses();if(!x)return;$("pfav").textContent=(x.u||"?").charAt(0).toUpperCase();$("pfname").textContent=x.sh||"Belum ada nama toko";$("pfuser").textContent="@"+(x.u||"");$("pfshop").value=x.sh||"";$("pfwa").value=(x.wa||"").replace(/^62/,"0")}
+  function pfFill(){var x=ses();if(!x)return;$("pfav").textContent=(x.u||"?").charAt(0).toUpperCase();if(x.av){$("pfav").style.backgroundImage="url("+x.av+")";$("pfav").style.backgroundSize="cover";$("pfav").style.backgroundPosition="center";$("pfav").textContent=""}$("pfname").textContent=x.sh||"Belum ada nama toko";$("pfuser").textContent="@"+(x.u||"");$("pfshop").value=x.sh||"";$("pfwa").value=(x.wa||"").replace(/^62/,"0")}
   $("pfsave").addEventListener("click",function(){
     var x=ses();if(!x||!x.at)return;
     var sh=$("pfshop").value.trim().replace(/\s+/g," ");
